@@ -287,7 +287,7 @@ extension AppDelegate {
         Task { @MainActor in
             defer { updateInFlight = false }
             do {
-                var request = URLRequest(url: URL(string: "https://api.github.com/repos/DLmember/Minecraft-Desktop-Pet/releases/latest")!)
+                var request = URLRequest(url: URL(string: "https://api.github.com/repos/jasonhukom/Desktop-Pet/releases/latest")!)
                 request.timeoutInterval = 12; request.setValue("MinecraftDesktopPet-macOS", forHTTPHeaderField: "User-Agent")
                 request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
                 let (data, response) = try await network.data(for: request)
@@ -302,7 +302,7 @@ extension AppDelegate {
                 a.informativeText = "Current: v\(appVersion) · Repository: \(tag)\n" + (hasMac ? "macOS release assets are available. Verify version and download." : "macOS package not found on release page yet. Do not use Windows executable on macOS.")
                 a.addButton(withTitle: "Close"); a.addButton(withTitle: "Open Release Page")
                 if a.runModal() == .alertSecondButtonReturn {
-                    NSWorkspace.shared.open(URL(string: "https://github.com/DLmember/Minecraft-Desktop-Pet/releases")!)
+                    NSWorkspace.shared.open(URL(string: "https://github.com/jasonhukom/Desktop-Pet/releases")!)
                 }
             } catch { alert("Unable to reach GitHub Q_Q\nCould be network issues or API rate limits. Please try again later.") }
         }

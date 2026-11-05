@@ -1,6 +1,6 @@
-# Minecraft Desktop Pet v2.5 · macOS
+# Minecraft Desktop Pet v1.0.0 · macOS
 
-macOS edition synchronized with the Windows v2.5.3 main release, built as a universal binary for Apple Silicon / Intel: Apple Silicon requires macOS 12+, Intel requires macOS 13+. This release is the mainline standard edition, without the Blockbench compatibility layer.
+macOS edition synchronized with the Windows v1.0.0 main release, built as a universal binary for Apple Silicon / Intel: Apple Silicon requires macOS 12+, Intel requires macOS 13+. This release is the mainline standard edition, without the Blockbench compatibility layer.
 
 ## Startup & Permissions
 
@@ -24,7 +24,7 @@ The software does not record or upload typed text. Secure text input (such as pa
 
 Settings are saved automatically; closing the settings panel only closes the window. Light and dark modes follow macOS system appearance. "Reset Skin" only resets the skin; "Reset Defaults" resets all settings.
 
-## v2.5 Interactions
+## v1.0.0 Interactions
 
 - **DA Blink**: Requires custom skin with eye textures and markers. Automatically disabled in Chibi mode.
 - **DA Dance**: Automatically sneaks and sways in standard standing posture without holding Shift; sitting and custom poses do not trigger.

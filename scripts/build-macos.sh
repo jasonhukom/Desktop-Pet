@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEST="${1:-$ROOT/release/macos}"
-APP="$DEST/Minecraft桌宠.app"
+APP="$DEST/Minecraft Desktop Pet.app"
 # Stop at the closing quote: Cargo.toml may use CRLF line endings.
 VERSION="$(sed -n 's/^version = "\([^"]*\)".*/\1/p' "$ROOT/native/Cargo.toml" | head -1)"
 [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){1,2}$ ]] || { echo "Unexpected version in native/Cargo.toml: $VERSION" >&2; exit 1; }
@@ -51,12 +51,12 @@ cp "$ROOT/macos/使用说明-macOS.md" "$DEST/使用说明-macOS.md"
 if [ -f "$ROOT/macos/更新与验证-2.5.md" ]; then
     cp "$ROOT/macos/更新与验证-2.5.md" "$DEST/更新与验证.md"
 fi
-ditto -c -k --sequesterRsrc --keepParent "$APP" "$DEST/Minecraft桌宠-${VERSION}-mac-universal.zip"
+ditto -c -k --sequesterRsrc --keepParent "$APP" "$DEST/Minecraft-Desktop-Pet-${VERSION}-mac-universal.zip"
 # Single-chip packages keep the installed app under the 5 MB budget (CONTRIBUTING.md).
 # Same signed program as the universal app, thinned to one architecture and re-signed.
 for PAIR in 'arm64 AppleSilicon 12.0' 'x86_64 Intel 13.0'; do
     read -r SWIFT_ARCH LABEL MIN_MACOS <<< "$PAIR"
-    THIN="$DEST/$LABEL/Minecraft桌宠.app"
+    THIN="$DEST/$LABEL/Minecraft Desktop Pet.app"
     rm -rf "$DEST/$LABEL"; mkdir -p "$DEST/$LABEL"
     ditto "$APP" "$THIN"
     lipo "$APP/Contents/MacOS/MinecraftPet" -thin "$SWIFT_ARCH" -output "$THIN/Contents/MacOS/MinecraftPet"
@@ -64,7 +64,7 @@ for PAIR in 'arm64 AppleSilicon 12.0' 'x86_64 Intel 13.0'; do
         -c "Delete :LSMinimumSystemVersionByArchitecture" "$THIN/Contents/Info.plist"
     codesign --force --sign - "$THIN"
     codesign --verify --deep --strict "$THIN"
-    ditto -c -k --sequesterRsrc --keepParent "$THIN" "$DEST/Minecraft桌宠-${VERSION}-mac-$LABEL.zip"
+    ditto -c -k --sequesterRsrc --keepParent "$THIN" "$DEST/Minecraft-Desktop-Pet-${VERSION}-mac-$LABEL.zip"
 done
 echo "Built: $APP"
-echo "Built: $DEST/AppleSilicon/Minecraft桌宠.app, $DEST/Intel/Minecraft桌宠.app"
+echo "Built: $DEST/AppleSilicon/Minecraft Desktop Pet.app, $DEST/Intel/Minecraft Desktop Pet.app"

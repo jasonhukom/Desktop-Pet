@@ -261,6 +261,11 @@ impl Settings {
             self.custom_base = "standing".into();
         }
         self.custom_sitting_pose.clean();
+        if self.skin_name == "内置 · 林间旅人" || self.skin_name.is_empty() {
+            self.skin_name = "Built-in · Forest Traveler".into();
+        } else if let Some(base) = self.skin_name.strip_suffix(" · 正版皮肤") {
+            self.skin_name = format!("{base} · Official Skin");
+        }
     }
     pub fn head(&self) -> serde_json::Value {
         serde_json::json!({"headSensitivityX":self.head_sensitivity_x,"headSensitivityY":self.head_sensitivity_y,"headRangeX":self.head_range_x,"headRangeY":self.head_range_y,"headCenterX":self.head_center_x,"headCenterY":self.head_center_y})

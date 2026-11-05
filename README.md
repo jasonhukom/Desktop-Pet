@@ -1,6 +1,6 @@
 # Minecraft Desktop Pet
 
-[![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%20%2F%2011%20x64-0078D6)](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) [![macOS Apple Silicon 12+ | Intel 13+](https://img.shields.io/badge/macOS-Apple%20Silicon%2012%2B%20%7C%20Intel%2013%2B-000000?logo=apple)](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) [![Release](https://img.shields.io/github/v/release/DLmember/Minecraft-Desktop-Pet)](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) [![License: MIT](https://img.shields.io/github/license/DLmember/Minecraft-Desktop-Pet)](LICENSE)
+[![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%20%2F%2011%20x64-0078D6)](https://github.com/jasonhukom/Desktop-Pet/releases/latest) [![macOS Apple Silicon 12+ | Intel 13+](https://img.shields.io/badge/macOS-Apple%20Silicon%2012%2B%20%7C%20Intel%2013%2B-000000?logo=apple)](https://github.com/jasonhukom/Desktop-Pet/releases/latest) [![Release](https://img.shields.io/github/v/release/jasonhukom/Desktop-Pet)](https://github.com/jasonhukom/Desktop-Pet/releases/latest) [![License: MIT](https://img.shields.io/github/license/jasonhukom/Desktop-Pet)](LICENSE)
 
 Have a Minecraft-style character sit on your desktop, track your cursor, and keep you company as you type.
 
@@ -10,9 +10,9 @@ Have a Minecraft-style character sit on your desktop, track your cursor, and kee
 
 ## Download
 
-Go to the [Latest Release](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) to download.
+Go to the [Latest Release](https://github.com/jasonhukom/Desktop-Pet/releases/latest) to download.
 
-Supports **Windows 10/11 x64 and macOS (Apple Silicon 12+, Intel 13+)**. Fully portable; no need to install Electron, Java, or additional runtime environments. v2.5.3 provides both Windows and macOS editions.
+Supports **Windows 10/11 x64 and macOS (Apple Silicon 12+, Intel 13+)**. Fully portable; no need to install Electron, Java, or additional runtime environments. v1.0.0 provides both Windows and macOS editions.
 
 **Full mouse click-through is enabled by default on first launch.** Double-click the tray icon to open Settings/Console; disable "Click-Through" first when you want to drag the pet. The icon may be located in the taskbar overflow area.
 

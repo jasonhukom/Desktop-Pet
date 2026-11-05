@@ -23,7 +23,7 @@ fn release_comparison(remote:&str,current:&str)->String {
 }
 impl App {
     pub(super) unsafe fn open_github(&self, releases: bool) {
-        let url = if releases { "https://github.com/DLmember/Minecraft-Desktop-Pet/releases" } else { "https://github.com/DLmember/Minecraft-Desktop-Pet" };
+        let url = if releases { "https://github.com/jasonhukom/Desktop-Pet/releases" } else { "https://github.com/jasonhukom/Desktop-Pet" };
         ShellExecuteW(self.panel, wide("open").as_ptr(), wide(url).as_ptr(), null(), null(), SW_SHOWNORMAL);
     }
     pub(super) unsafe fn check_update(&mut self) {
@@ -33,7 +33,7 @@ impl App {
         self.update_button(false);
         std::thread::spawn(move || {
             let result = (|| {
-                let bytes = online::get("api.github.com", "/repos/DLmember/Minecraft-Desktop-Pet/releases/latest", 256*1024)?;
+                let bytes = online::get("api.github.com", "/repos/jasonhukom/Desktop-Pet/releases/latest", 256*1024)?;
                 let v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
                 if v["draft"].as_bool()!=Some(false) || v["prerelease"].as_bool()!=Some(false) { return Err("No stable release".into()); }
                 let tag=v["tag_name"].as_str().ok_or("Missing version")?;

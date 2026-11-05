@@ -583,7 +583,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         return dict
     }
     @objc func openDataFolder() { NSWorkspace.shared.open(dataDir) }
-    @objc func openProject() { NSWorkspace.shared.open(URL(string: "https://github.com/DLmember/Minecraft-Desktop-Pet")!) }
+    @objc func openProject() { NSWorkspace.shared.open(URL(string: "https://github.com/jasonhukom/Desktop-Pet")!) }
     @objc func resetSettings() {
         downloadID = UUID(); saveTimer?.invalidate()
         if !smoke && flag("autostart") {

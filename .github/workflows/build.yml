@@ -1,7 +1,5 @@
 name: build
 
-# Windows 在 Linux 上交叉编译；macOS 只能在 Apple 的机器上出 .app（需要 swiftc 与系统框架），
-# 所以放到 macOS runner 上跑仓库自带的 scripts/build-macos.sh。
 'on':
   workflow_dispatch:
   push:
@@ -27,18 +25,16 @@ jobs:
         run: |
           VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' native/Cargo.toml | head -1)
           mkdir -p out
-          cp native/target/x86_64-pc-windows-gnu/release/minecraft-pet.exe "out/Minecraft桌宠.exe"
+          cp native/target/x86_64-pc-windows-gnu/release/minecraft-pet.exe "out/Minecraft Desktop Pet.exe"
           cp 使用说明.md CHANGELOG.md LICENSE THIRD_PARTY_NOTICES.md out/
           cp -R native/licenses out/
-          cd out && zip -q -r "../Minecraft桌宠-${VERSION}-Windows.zip" .
+          cd out && zip -q -r "../Minecraft-Desktop-Pet-${VERSION}-Windows.zip" .
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: Minecraft桌宠-*-Windows.zip
+          path: Minecraft-Desktop-Pet-*-Windows.zip
 
   macos:
-    # v2.5 is a Windows-only release; keep the existing macOS release.
-    if: github.ref != 'refs/tags/v2.5'
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -50,8 +46,30 @@ jobs:
       - name: Build
         run: bash scripts/build-macos.sh "$RUNNER_TEMP/out"
       - name: Swift input and platform tests
-        run: '"$RUNNER_TEMP/out/Minecraft桌宠.app/Contents/MacOS/MinecraftPet" --self-test-input'
+        run: '"$RUNNER_TEMP/out/Minecraft Desktop Pet.app/Contents/MacOS/MinecraftPet" --self-test-input'
       - uses: actions/upload-artifact@v4
         with:
           name: macos
           path: ${{ runner.temp }}/out/*.zip
+
+  release:
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/windows/*.zip
+            artifacts/macos/*.zip
+          tag_name: ${{ github.ref_name }}
+          name: Minecraft Desktop Pet ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
