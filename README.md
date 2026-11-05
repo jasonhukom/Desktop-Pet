@@ -1,79 +1,79 @@
-# Minecraft 桌宠
+# Minecraft Desktop Pet
 
 [![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%20%2F%2011%20x64-0078D6)](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) [![macOS Apple Silicon 12+ | Intel 13+](https://img.shields.io/badge/macOS-Apple%20Silicon%2012%2B%20%7C%20Intel%2013%2B-000000?logo=apple)](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) [![Release](https://img.shields.io/github/v/release/DLmember/Minecraft-Desktop-Pet)](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) [![License: MIT](https://img.shields.io/github/license/DLmember/Minecraft-Desktop-Pet)](LICENSE)
 
-让一个 Minecraft 风格的小人待在桌面上，跟着鼠标转头，陪你敲键盘。
+Have a Minecraft-style character sit on your desktop, track your cursor, and keep you company as you type.
 
-**由 GPT 6 Astra 制作**
+**Created by GPT 6 Astra**
 
-> 本项目是独立粉丝作品，与 Mojang Studios 或 Microsoft 无关联，未获其授权、赞助或官方认可。Minecraft 名称及相关商标归其各自权利人所有。
+> This project is an independent fan work and is not affiliated with, endorsed by, sponsored by, or officially approved by Mojang Studios or Microsoft. The Minecraft name and related trademarks belong to their respective owners.
 
-## 下载
+## Download
 
-前往 [最新版本](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) 下载。
+Go to the [Latest Release](https://github.com/DLmember/Minecraft-Desktop-Pet/releases/latest) to download.
 
-支持 **Windows 10/11 x64、macOS（Apple Silicon 12+，Intel 13+）**。便携运行，不需要安装 Electron、Java 或额外运行环境。v2.5.3 提供 Windows 及 macOS 版。
+Supports **Windows 10/11 x64 and macOS (Apple Silicon 12+, Intel 13+)**. Fully portable; no need to install Electron, Java, or additional runtime environments. v2.5.3 provides both Windows and macOS editions.
 
-**首次启动默认开启完全鼠标穿透。** 请双击任务栏托盘图标打开控制台；想拖动桌宠时先取消“完全鼠标穿透”。图标可能收在任务栏的隐藏图标区域。
+**Full mouse click-through is enabled by default on first launch.** Double-click the tray icon to open Settings/Console; disable "Click-Through" first when you want to drag the pet. The icon may be located in the taskbar overflow area.
 
-## 可以做什么
+## Features
 
-- 导入本地 PNG 皮肤，或输入 Java 版正版用户名 / UUID 获取皮肤；支持经典和纤细手臂、旧版及高清皮肤、皮肤外层。
-- 站立、坐下，或分别自定义站姿和坐姿。身体和四肢可以旋转，不做肘膝弯曲。
-- 头部跟随鼠标，水平与垂直方向的灵敏度、范围和中心点均可调整；整体角度也可调整。
-- 站立时按住 Shift 立即潜行；坐下时随全局键盘输入敲击键盘，支持精准位置和双手交替。
-- 长按按键保持手位，松开后自然回位。打字时短暂压低身体，幅度可调；快速敲字会重新播放动作。
-- 点击鼠标挥动主手，可切换左右手；连续点击会立即重新挥动。
-- 置顶、缩放、自由摆放和完全鼠标穿透。
-- 可选随 Windows 登录自动启动，通过控制台或右键菜单开启、关闭。
-- 用正版 ID 获取皮肤时，会一并取下账号当前佩戴的披风并显示在背后。穿透时鼠标移到桌宠上，会在约 0.15 秒内淡至 25% 不透明度。
-- 可选 **hyp 快速队伍聊天**：键盘输入半角 `#` 自动替换成 `/p chat `，不自动发送。
-- 30 / 60 / 90 / 120 / 144 / 165 / 240 FPS 七档，没有持续动画时静止停止绘制。设置和导入的皮肤自动保存。
+- Import local PNG skins or enter an official Java Edition username / UUID to fetch skins; supports classic and slim arms, legacy and HD skins, and outer skin layers.
+- Stand, sit, or customize standing and sitting poses independently. Limbs and torso can rotate without elbow/knee bends.
+- Head tracks the mouse cursor; horizontal and vertical sensitivity, range, and center offsets are adjustable; overall model orientation can also be adjusted.
+- Hold Shift while standing to sneak instantly; while sitting, strikes the keyboard in sync with global typing, supporting precise positions and alternating hands.
+- Long-pressing a key holds the hand position, smoothly returning to rest upon release. Briefly squashes body when typing, with adjustable depth; rapid typing retriggers animations.
+- Click mouse buttons to swing the main hand; switchable between left and right hand; continuous clicks re-swing immediately.
+- Always on top, scaling, free dragging/placement, and full mouse click-through.
+- Optional autostart on Windows / macOS login, toggled via the settings panel or context menu.
+- Fetching skin with an official ID retrieves and equips the account's cape on its back. When click-through is enabled, moving the mouse over the pet fades opacity to 25% within ~0.15s.
+- Optional **hyp quick team chat**: typing `#` on your keyboard automatically replaces it with `/p chat `, without sending automatically.
+- 7 FPS tiers (30 / 60 / 90 / 120 / 144 / 165 / 240 FPS); stops drawing when idle to save CPU. Preferences and imported skins are saved automatically.
 
-## 常见问题 Q&A
+## FAQ
 
-**Q：怎么移动桌宠？**  
-A：刚下载下来的桌宠是默认开启完全鼠标穿透的，在任务栏右边的托盘里找到苦力怕图标，右击，关闭完全鼠标穿透即可。
+**Q: How do I move the desktop pet?**  
+A: Freshly downloaded pets have full mouse click-through enabled by default. Find the Creeper icon in the taskbar tray, right-click (or double-click) it, and uncheck "Click-Through" to drag the pet.
 
-**Q：我没有正版账号怎么办？**  
-A：你可以输入任何人的 mc 名字，也可以导入皮肤文件。
+**Q: What if I don't have an official Minecraft account?**  
+A: You can enter any player's Minecraft username, or import a local skin PNG file directly.
 
-**Q：为什么会报毒？**  
-A：可能是由于桌宠没有数字签名导致，但是桌宠本身无毒，这纯属误报。不过还请你确认一下你是从视频的链接里下载的！
+**Q: Why does antivirus flag the application?**  
+A: This can happen because the executable does not have an expensive commercial code-signing certificate, resulting in false positives. The pet contains no malware. Please make sure you downloaded it from the official GitHub release!
 
-**Q：为什么 macOS 版人物不跟着敲字？**  
-A：macOS 需要给桌宠授予“输入监控”权限，人物才能响应全局键盘。打开控制台看底部状态：红色“键盘互动未授权”就是还没授权。点“输入权限…”→“申请输入监控”，把弹出卡片里的桌宠图标拖进系统设置的“输入监控”列表并打开开关，然后重启桌宠。未授权时，人物只在桌宠自己的窗口（例如控制台）里敲字。
+**Q: Why doesn't the character type on macOS?**  
+A: macOS requires granting "Input Monitoring" permission to the pet to observe global keystrokes. Open Settings and check the bottom status line: a red "Keyboard interaction awaiting authorization" indicates missing permissions. Click "Input Permissions…" → "Request Input Monitoring", drag the pet icon from the popup card into the System Settings "Input Monitoring" list, enable the toggle, and restart the pet. Without permission, the character only types in its own windows (such as Settings).
 
-**Q：为什么 macOS 版更新桌宠后人物又不敲字了？**  
-A：macOS 的授权记在旧版本的应用上，换成新版本后会失效，但系统设置里可能仍显示已开启。请在“系统设置 → 隐私与安全性 → 输入监控”里选中旧的“Minecraft桌宠”，点“−”删除，再按上一条重新授权并重启桌宠；用了快速聊天的话，“辅助功能”里也照样处理一次。
+**Q: Why did the character stop typing after updating on macOS?**  
+A: macOS stores permissions against the old version of the app bundle, which may become invalidated upon replacement even if System Settings still shows it as enabled. In "System Settings → Privacy & Security → Input Monitoring", select the old "Minecraft Desktop Pet", click "−" to delete it, then re-grant permission as described above and restart the pet. If quick chat is enabled, repeat this for "Accessibility".
 
-## 隐私与网络
+## Privacy & Network
 
-日常互动在本机处理，正式运行不记录输入文本、不上传按键。主动获取正版皮肤时连接 Mojang 的账号资料及纹理服务；点击“检查更新”时连接 GitHub。无需账号密码。开启音乐音符时仅在本机查询音频会话，不录音、不上传音频。
+Daily interactions are processed strictly locally on your machine. In regular operation, no typed text is recorded or keystrokes uploaded. Mojang's official profile and texture servers are contacted only when actively fetching an official skin; GitHub is contacted only when clicking "Check Updates". No passwords or credentials are ever required. When music notes are enabled, only local audio playback sessions are queried; no audio is recorded or uploaded.
 
-## 人员
+## Credits & Team
 
-- @DLmember（owner）
-- @vanillaQAQ（macOS 版维护者）
-- @H0mble（Linux 版贡献者）
+- @DLmember (Owner)
+- @vanillaQAQ (macOS maintainer)
+- @H0mble (Linux contributor)
 
-**其他贡献者：**
+**Other contributors:**
 
-- 对桌宠本体进行优化以及提交新功能：B站 @汐颜摸大鱼、B站 @星蓝想睡觉、@zsyghxf、@RuiShu1024、@Kevae12138
-- 送了很多 token：@Sullove0685
-- 以及众多对桌宠提出 bug 和帮忙测试与排查的用户
+- Pet optimizations and feature contributions: Bilibili @汐颜摸大鱼, Bilibili @星蓝想睡觉, @zsyghxf, @RuiShu1024, @Kevae12138
+- Generous token sponsorship: @Sullove0685
+- And all users who reported bugs and helped test and troubleshoot!
 
-## 从源码构建
+## Building from Source
 
-源码位于 `native/src`；首次启动预设位于 `native/default-settings.json`；内置皮肤及图标位于 `assets`。
+Source code is located in `native/src`; initial first-run defaults in `native/default-settings.json`; built-in skin and icons in `assets`.
 
 ### Windows
 
-Windows 原生 Rust + Win32 实现，使用 CPU 绘制透明方块模型，不包含浏览器运行时。
+Native Rust + Win32 implementation using CPU rendering for the transparent cuboid model, containing no browser or web runtime.
 
-1. 安装 Rust 的 `stable-x86_64-pc-windows-gnu` 工具链。
-2. 安装 x86_64 UCRT 版 [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw/releases)，其中需要 `clang++.exe`、`windres.exe` 和 `x86_64-w64-mingw32-gcc.exe`。
-3. 建议将项目放在不含中文或空格的路径，运行：
+1. Install the Rust `stable-x86_64-pc-windows-gnu` toolchain.
+2. Install the x86_64 UCRT version of [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw/releases), including `clang++.exe`, `windres.exe`, and `x86_64-w64-mingw32-gcc.exe`.
+3. It is recommended to place the repository in a path without spaces or non-ASCII characters, then run:
 
 ```powershell
 rustup toolchain install stable-x86_64-pc-windows-gnu
@@ -81,15 +81,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1 -Toolchain
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1 -Action test -ToolchainBin C:\llvm-mingw\bin
 ```
 
-产物：`native/target/release/minecraft-pet.exe`。脚本使用 Cargo.lock 锁定的依赖；首次构建需要网络下载依赖。可通过 `-RustToolchain` 选择已安装的 GNU 工具链版本。
+Output: `native/target/release/minecraft-pet.exe`. The script uses dependencies locked in `Cargo.lock`. First build requires network access to download dependencies. The GNU toolchain version can be specified via `-RustToolchain`.
 
 ### macOS
 
-本地移植复用原始 Rust 渲染、皮肤与动画，通过 Swift / AppKit 提供透明窗口、菜单栏、控制台及全局键盘互动，以及可选的井号聊天前缀替换。
-支持 Apple Silicon（macOS 12+）与 Intel（macOS 13+），构建为通用架构；支持需辅助功能授权的 hyp 快速队伍聊天。
-完整操作说明参见 [macOS 说明](macos/使用说明-macOS.md)。
+Native macOS port reusing the core Rust rendering, skin, and animation logic, providing a transparent window, menu bar item, settings console, and global keyboard interaction via Swift / AppKit, along with optional `#` quick chat prefix replacement.
+Supports Apple Silicon (macOS 12+) and Intel (macOS 13+), built as a universal binary.
+See [macOS Instructions](macos/使用说明-macOS.md) for detailed documentation.
 
-构建需要 Xcode Command Line Tools、Swift 和 Rust stable：
+Requires Xcode Command Line Tools, Swift, and Rust stable:
 
 ```bash
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
@@ -97,8 +97,8 @@ cargo test --manifest-path native/Cargo.toml --lib --locked
 scripts/build-macos.sh /absolute/path/to/output
 ```
 
-默认产物在 `release/macos/`：通用版 `Minecraft桌宠.app`，以及 `AppleSilicon/`、`Intel/` 下的单芯片版，各附 ZIP。构建脚本使用本地临时签名，未进行 Apple 公证。
+Default outputs are placed in `release/macos/`: universal `Minecraft Desktop Pet.app`, as well as single-architecture builds under `AppleSilicon/` and `Intel/`, each with accompanying ZIP archives. Build script uses local ad-hoc code signing without Apple notarization.
 
-## 许可
+## License
 
-应用代码及项目原创示例皮肤采用 [MIT License](LICENSE)。依赖许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 和 `native/licenses/`。用户导入的皮肤不受本项目许可证覆盖，请尊重原作者授权。
+Application code and the project's original sample skin are licensed under the [MIT License](LICENSE). Dependency licenses are detailed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `native/licenses/`. User-imported skins are not covered by this repository's license; please respect original authors' rights.

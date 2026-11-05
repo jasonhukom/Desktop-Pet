@@ -36,10 +36,10 @@ enum PermissionLook {
     static func problem(listen: Bool, access: Bool, inputOK: Bool) -> String? {
         var parts: [String] = []
         if !inputOK {
-            parts.append(listen ? "系统显示输入监控已授权，但键盘仍未连接：多半是重装前留下的旧授权记录。"
-                                : "输入监控未授权：角色只能在本应用窗口内敲字。")
+            parts.append(listen ? "System shows Input Monitoring granted, but keyboard is not connected: likely a stale grant from an earlier build."
+                                : "Input Monitoring unauthorized: pet will only type inside this app's windows.")
         }
-        if !access { parts.append("辅助功能未授权：快速聊天不可用。") }
+        if !access { parts.append("Accessibility unauthorized: quick chat is unavailable.") }
         return parts.isEmpty ? nil : parts.joined(separator: " ")
     }
     /// Input Monitoring is satisfied once global keys actually arrive.
@@ -65,7 +65,7 @@ enum LoginStartup {
         let target = directory.appendingPathComponent(label + ".plist")
         if enabled {
             guard app.pathExtension == "app", FileManager.default.fileExists(atPath: app.appendingPathComponent("Contents/MacOS/MinecraftPet").path) else {
-                throw PetError("请从完整的 .app 应用中设置登录启动。")
+                throw PetError("Please set login startup from the complete .app bundle.")
             }
             let bytes = try PropertyListSerialization.data(fromPropertyList: propertyList(app: app, data: data), format: .xml, options: 0)
             if (try? Data(contentsOf: target)) == bytes { return }
@@ -77,7 +77,7 @@ enum LoginStartup {
             let plist = try PropertyListSerialization.propertyList(from: bytes, format: nil) as? [String: Any]
             guard let args = plist?["ProgramArguments"] as? [String],
                   let i = args.firstIndex(of: "--data-dir"), args.indices.contains(i+1), args[i+1] == data.path else {
-                throw PetError("登录启动项属于另一个设置目录，未修改。")
+                throw PetError("Login startup entry belongs to another settings directory; not modified.")
             }
             try FileManager.default.removeItem(at: target)
         }
@@ -89,10 +89,10 @@ enum OfficialTexture {
         guard let url = URLComponents(string: value),
               ["http", "https"].contains(url.scheme ?? ""), url.host == "textures.minecraft.net",
               url.user == nil, url.password == nil, url.port == nil, url.query == nil, url.fragment == nil,
-              url.path.hasPrefix("/texture/") else { throw PetError("官方纹理地址无效。") }
+              url.path.hasPrefix("/texture/") else { throw PetError("Invalid official texture URL.") }
         let hash = String(url.path.dropFirst("/texture/".count))
         guard !hash.isEmpty, hash.count <= 128, hash.unicodeScalars.allSatisfy({ CharacterSet(charactersIn: "0123456789abcdefABCDEF").contains($0) }) else {
-            throw PetError("官方纹理地址无效。")
+            throw PetError("Invalid official texture URL.")
         }
         return "https://textures.minecraft.net/texture/\(hash)"
     }

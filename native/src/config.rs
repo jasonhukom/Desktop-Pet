@@ -15,7 +15,7 @@ pub fn normalize_keyboard_color(value: &str) -> Option<String> {
         Some(format!("#{}", text.to_ascii_uppercase()))
     } else { None }
 }
-/// 开机自启的启动延迟档位（秒）；0 表示立即出现。
+/// Startup delay options for autostart (seconds); 0 means immediate.
 #[cfg(not(windows))]
 pub const AUTOSTART_DELAYS: [u32; 6] = [0, 5, 15, 30, 60, 120];
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
@@ -90,11 +90,11 @@ pub struct Settings {
     pub typing_letters: bool,
     pub music_notes: bool,
     pub tease_enabled: bool,
-    /// PAT喵！：点击时短促手部动画 + 两段喵喵声随机二选一。
+    /// PAT Meow!: short arm animation on click + random choice of two meow sounds.
     pub pat_enabled: bool,
-    /// PAT喵！音效音量（0..=100，百分比）。
+    /// PAT Meow! sound volume (0..=100, percentage).
     pub pat_volume: u32,
-    /// 锁定双击：勾选后双击桌宠不再打开设置面板（托盘/热键仍可打开）。
+    /// Lock double-click: when checked, double-clicking the pet will not open the settings panel (tray/hotkey can still open it).
     pub lock_double_click: bool,
     // Keep the previous preview setting key so existing preferences survive.
     #[serde(rename = "idleAnimation")]
@@ -158,7 +158,7 @@ impl Default for Settings {
             autostart_delay: 0,
             outer_layer: true,
             fps: 60,
-            skin_name: "内置 · 林间旅人".into(),
+            skin_name: "Built-in · Forest Traveler".into(),
             skin_path: String::new(),
             position: None,
             head_sensitivity_x: 100.,
@@ -319,7 +319,7 @@ pub fn atomic(path: &Path, data: &[u8]) -> Result<(), String> {
     if let Err(staged) = staged {
         let _ = fs::remove_file(&tmp);
         return write_file(path, data).map_err(|direct| {
-            format!("临时文件失败：{staged}；直接写入失败：{direct}")
+            format!("Temp file failed: {staged}; direct write failed: {direct}")
         });
     }
     #[cfg(windows)]
@@ -339,7 +339,7 @@ pub fn atomic(path: &Path, data: &[u8]) -> Result<(), String> {
         let replaced = std::io::Error::last_os_error();
         let _ = fs::remove_file(&tmp);
         write_file(path, data).map_err(|direct| {
-            format!("替换失败：{replaced}；直接写入失败：{direct}")
+            format!("Replace failed: {replaced}; direct write failed: {direct}")
         })
     }
     #[cfg(not(windows))]
@@ -431,7 +431,7 @@ impl Store {
                             value = serde_json::from_value::<Settings>(clean).ok();
                             if value.is_some() {
                                 if i > 0 {
-                                    self.notice = "已从备份恢复设置。".into();
+                                    self.notice = "Settings restored from backup.".into();
                                 }
                                 break;
                             }
@@ -446,7 +446,7 @@ impl Store {
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
                 Err(e) => {
                     self.read_error = Some(format!(
-                        "无法读取设置 {}：{}。为保护原有设置，本次不启动。",
+                        "Cannot read settings {}: {}. To protect existing settings, not launching this time.",
                         p.display(),
                         e
                     ));
@@ -455,7 +455,7 @@ impl Store {
             }
         }
         if value.is_none() && damaged {
-            self.notice = "设置及备份已损坏，已保留原文件供排查；本次使用默认设置。".into();
+            self.notice = "Settings and backup are corrupted; original files preserved for troubleshooting. Using default settings.".into();
         }
         let mut s = value.unwrap_or_else(Settings::first_run_defaults);
         for name in ["head-follow.json", "head-follow.json.bak"] {
@@ -465,7 +465,7 @@ impl Store {
                         let old = s.head();
                         if s.set_head(&v) {
                             if old != s.head() {
-                                self.notice = "已从独立保存的头部参数恢复设置。".into();
+                                self.notice = "Settings restored from separately saved head tracking parameters.".into();
                             }
                             break;
                         }
@@ -474,7 +474,7 @@ impl Store {
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
                 Err(e) => {
                     self.read_error = Some(format!(
-                        "无法读取头部参数：{}。为保护原有设置，本次不启动。",
+                        "Cannot read head tracking parameters: {}. To protect existing settings, not launching this time.",
                         e
                     ));
                     break;

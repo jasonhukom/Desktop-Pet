@@ -11,11 +11,11 @@ BEGIN
  BEGIN
   BLOCK "040904B0"
   BEGIN
-   VALUE "FileDescription", "Minecraft桌宠\0"
-   VALUE "ProductName", "Minecraft桌宠\0"
+   VALUE "FileDescription", "Minecraft Desktop Pet\0"
+   VALUE "ProductName", "Minecraft Desktop Pet\0"
    VALUE "FileVersion", "2.5.3\0"
    VALUE "ProductVersion", "2.5.3\0"
-   VALUE "OriginalFilename", "Minecraft桌宠.exe\0"
+   VALUE "OriginalFilename", "Minecraft Desktop Pet.exe\0"
   END
  END
  BLOCK "VarFileInfo"

@@ -113,7 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     weak var musicToggle: NSButton?
     var pageButtons: [NSButton] = []
     var saveStatus: NSTextField?
-    var musicStatus = "音乐音符已关闭。"
+    var musicStatus = "Music notes disabled."
     var startupStatus: NSTextField?
     let loginDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/LaunchAgents", isDirectory: true)
     lazy var network = URLSession(configuration: .ephemeral, delegate: OfficialSessionDelegate(), delegateQueue: nil)
@@ -184,9 +184,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         do { try FileManager.default.createDirectory(at: dataDir, withIntermediateDirectories: true) }
-        catch { alert("无法创建设置目录：\(error.localizedDescription)"); NSApp.terminate(nil); return }
+        catch { alert("Cannot create settings folder: \(error.localizedDescription)"); NSApp.terminate(nil); return }
         core = dataDir.path.withCString { pet_create($0) }
-        guard core != nil else { alert("无法读取设置。请检查设置目录的访问权限：\n\(dataDir.path)"); NSApp.terminate(nil); return }
+        guard core != nil else { alert("Cannot read settings. Please check access permissions for settings folder:\n\(dataDir.path)"); NSApp.terminate(nil); return }
         loadSettings()
         let width = 360 * number("scale"), height = 420 * number("scale")
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
@@ -197,7 +197,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         }
         pet = PetPanel(contentRect: NSRect(origin: origin, size: NSSize(width: width, height: height)),
                        styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
-        pet.title = "Minecraft桌宠 \(appVersion) · macOS"
+        pet.title = "Minecraft Desktop Pet \(appVersion) · macOS"
         pet.isOpaque = false; pet.backgroundColor = .clear; pet.hasShadow = false
         pet.hidesOnDeactivate = false; pet.isReleasedWhenClosed = false
         pet.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
@@ -215,7 +215,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
                 return true
             }
             icon.isTemplate = true; button.image = icon
-            button.toolTip = "Minecraft桌宠 v\(appVersion) · 点击打开菜单"
+            button.toolTip = "Minecraft Desktop Pet v\(appVersion) · Click to open menu"
         }
         let menu = NSMenu(); menu.delegate = self; status.menu = menu; buildMenu(menu)
         if !smoke {
@@ -227,14 +227,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         let delay = smoke ? 0 : LoginStartup.delay(arguments: launchArguments, enabled: flag("autostart"), seconds: Int(number("autostartDelay")))
         startupDelay = delay
         if delay > 0 {
-            status.button?.toolTip = "Minecraft桌宠：登录启动等待 \(delay) 秒；打开控制台可立即启动"
+            status.button?.toolTip = "Minecraft Desktop Pet: Startup delay waiting \(delay)s; open settings to start immediately"
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(delay)) { [weak self] in self?.finishStartup() }
         } else { finishStartup() }
     }
     func finishStartup() {
         guard startupPending else { return }
         startupPending = false
-        status.button?.toolTip = "Minecraft桌宠 v\(appVersion) · 点击打开菜单"
+        status.button?.toolTip = "Minecraft Desktop Pet v\(appVersion) · Click to open menu"
         mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
             self?.handleMousePress(event)
         }
@@ -331,7 +331,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         if meow >= 0 && !smoke { patSound.play(Int(meow), volume: number("patVolume") / 100) }
         wake()
     }
-    /// 锁定双击: the second click stays an ordinary press (pat, hold, drag). Returns whether the console opened.
+    /// Lock double-click: the second click stays an ordinary press (pat, hold, drag). Returns whether the console opened.
     func openConsoleOnDoubleClick() -> Bool {
         guard !flag("lockDoubleClick") else { return false }
         pet_hold_cancel(core, now); showSettings(); return true
@@ -364,7 +364,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     func changed() {
         previewSettings()
         applyWindow(); restartTimer(); wake()
-        saveStatus?.stringValue = "待保存…"
+        saveStatus?.stringValue = "Saving…"
         saveTimer?.invalidate()
         saveTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: false) { [weak self] _ in self?.save() }
     }
@@ -377,8 +377,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         saveTimer?.invalidate(); saveTimer = nil
         guard core != nil, let data = try? JSONSerialization.data(withJSONObject: settings),
               let json = String(data: data, encoding: .utf8) else { return }
-        if !json.withCString({ pet_apply(core, $0) }) { saveStatus?.stringValue = "保存失败"; showCoreError(); loadSettings(); applyWindow() }
-        else { saveStatus?.stringValue = "已保存" }
+        if !json.withCString({ pet_apply(core, $0) }) { saveStatus?.stringValue = "Save failed"; showCoreError(); loadSettings(); applyWindow() }
+        else { saveStatus?.stringValue = "Saved" }
     }
     func savePosition() {
         settings["position"] = ["x": pet.frame.origin.x, "y": pet.frame.origin.y]
@@ -459,7 +459,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         do { try helper.run() }
         catch {
             restartPending = false
-            alert("无法重启应用：\(error.localizedDescription)")
+            alert("Cannot restart application: \(error.localizedDescription)")
             return
         }
         DispatchQueue.main.async { NSApp.terminate(nil) }
@@ -469,17 +469,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     }
     func updatePermission() {
         let listen = input.listeningAllowed, access = input.accessibilityAllowed
-        let keyboard = !flag("keyboardEnabled") ? "键盘互动已关闭" : (input.running ? "键盘互动已连接" : ((listen || access) ? "键盘权限已获准，连接待恢复" : "键盘互动等待授权"))
-        let chat = !flag("hypQuickChat") ? "快速聊天已关闭" : (input.quickChatReady ? "快速聊天已连接" : (access ? "聊天权限已获准，连接待恢复" : "快速聊天等待辅助功能权限"))
+        let keyboard = !flag("keyboardEnabled") ? "Keyboard interaction disabled" : (input.running ? "Keyboard interaction connected" : ((listen || access) ? "Keyboard permission granted, reconnecting" : "Keyboard interaction awaiting authorization"))
+        let chat = !flag("hypQuickChat") ? "Quick chat disabled" : (input.quickChatReady ? "Quick chat connected" : (access ? "Chat permission granted, reconnecting" : "Quick chat awaiting accessibility permission"))
         let inputOK = paneSatisfied(.inputMonitoring)
         permissionSummary?.attributedStringValue = PermissionLook.summary(keyboardAuthorized: inputOK, chatAuthorized: access)
-        inputRequestButton?.title = inputOK ? "输入监控已授权" : (listen ? "重新授权输入监控" : "申请输入监控")
-        accessRequestButton?.title = access ? "辅助功能已授权" : "申请辅助功能"
-        permissionLabel?.stringValue = "\(keyboard)。只用于角色动作，不保存或上传输入内容。"
+        inputRequestButton?.title = inputOK ? "Input Monitoring Authorized" : (listen ? "Reauthorize Input Monitoring" : "Request Input Monitoring")
+        accessRequestButton?.title = access ? "Accessibility Authorized" : "Request Accessibility"
+        permissionLabel?.stringValue = "\(keyboard). Used only for character animations; does not save or upload typed content."
         let problem = PermissionLook.problem(listen: listen, access: access, inputOK: inputOK)
         let level = PermissionLook.level(inputOK: inputOK, access: access)
-        accessLabel?.stringValue = (problem.map { "✕ \($0)" } ?? "✓ 权限正常")
-            + "\n输入监控：\(listen ? "已授权" : "待授权") · 辅助功能：\(access ? "已授权" : "待授权") · \(keyboard) · \(chat)"
+        accessLabel?.stringValue = (problem.map { "✕ \($0)" } ?? "✓ Permissions OK")
+            + "\nInput Monitoring: \(listen ? "Authorized" : "Pending") · Accessibility: \(access ? "Authorized" : "Pending") · \(keyboard) · \(chat)"
         inputHealthLabel?.stringValue = input.diagnosticSummary
         // Whole window: green with both items, yellow with one, red with neither.
         // A layer behind the controls: sheets draw their own material over backgroundColor.
@@ -505,9 +505,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         pet_destroy(core); core = nil
     }
     func alert(_ text: String) {
-        let a = NSAlert(); a.messageText = "Minecraft桌宠"; a.informativeText = text; a.runModal()
+        let a = NSAlert(); a.messageText = "Minecraft Desktop Pet"; a.informativeText = text; a.runModal()
     }
-    func showCoreError() { alert(pet_error(core).map { String(cString: $0) } ?? "操作失败。") }
+    func showCoreError() { alert(pet_error(core).map { String(cString: $0) } ?? "Operation failed.") }
     func closePanel() -> NSWindow? { panel?.close(); releaseConsole(); return nil }
 
     var downloadID = UUID()
@@ -516,26 +516,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         let compact = input.replacingOccurrences(of: "-", with: "")
         let isUUID = compact.count == 32 && compact.allSatisfy { $0.isHexDigit }
         let isName = input.count <= 16 && input.unicodeScalars.allSatisfy { CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_").contains($0) }
-        guard isUUID || isName else { alert("请输入有效的 Java 版用户名或 UUID。"); return }
+        guard isUUID || isName else { alert("Please enter a valid Java Edition username or UUID."); return }
         let requestID = UUID(); downloadID = requestID
-        onlineStatus?.stringValue = "正在连接官方皮肤服务…"
+        onlineStatus?.stringValue = "Connecting to official skin service…"
         Task { @MainActor in
             do {
                 let uuid: String
                 if isUUID { uuid = compact.lowercased() }
                 else {
                     let profile = try await fetchJSON("https://api.mojang.com/users/profiles/minecraft/\(input)")
-                    guard let id = profile["id"] as? String, id.count == 32, id.allSatisfy({ $0.isHexDigit }) else { throw PetError("没有找到这个 Java 版账号。") }
+                    guard let id = profile["id"] as? String, id.count == 32, id.allSatisfy({ $0.isHexDigit }) else { throw PetError("This Java Edition account was not found.") }
                     uuid = id
                 }
                 let profile = try await fetchJSON("https://sessionserver.mojang.com/session/minecraft/profile/\(uuid)")
                 guard let props = profile["properties"] as? [[String: Any]], let encoded = props.first(where: { $0["name"] as? String == "textures" })?["value"] as? String,
                       let decoded = Data(base64Encoded: encoded), let payload = try JSONSerialization.jsonObject(with: decoded) as? [String: Any],
-                      let textures = payload["textures"] as? [String: Any], let skin = textures["SKIN"] as? [String: Any], let address = skin["url"] as? String else { throw PetError("该账号没有可用的官方皮肤。") }
+                      let textures = payload["textures"] as? [String: Any], let skin = textures["SKIN"] as? [String: Any], let address = skin["url"] as? String else { throw PetError("This account has no official skin available.") }
                 let bytes = try await fetchData(OfficialTexture.address(address), limit: 8*1024*1024)
                 var capeBytes: Data?
                 if let rawCape = textures["CAPE"] {
-                    guard let cape = rawCape as? [String: Any], let address = cape["url"] as? String else { throw PetError("官方披风资料无效。") }
+                    guard let cape = rawCape as? [String: Any], let address = cape["url"] as? String else { throw PetError("Invalid official cape data.") }
                     capeBytes = try await fetchData(OfficialTexture.address(address), limit: 2*1024*1024)
                 }
                 guard requestID == downloadID else { return }
@@ -556,10 +556,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
                         return pet_import_profile(core, skinPath, nil, namePtr, modelPtr)
                     } }
                 }
-                guard imported else { throw PetError(pet_error(core).map { String(cString: $0) } ?? "纹理无法识别。") }
+                guard imported else { throw PetError(pet_error(core).map { String(cString: $0) } ?? "Unrecognized texture format.") }
                 loadSettings(); updateSkinSummary(); wake()
-                onlineStatus?.stringValue = "已载入：\(name) · \(capeBytes == nil ? "该账号未装备披风" : "皮肤与披风已保存")"
-            } catch { if requestID == downloadID { onlineStatus?.stringValue = "获取失败，保留原皮肤与披风：\(error.localizedDescription)" } }
+                onlineStatus?.stringValue = "Loaded: \(name) · \(capeBytes == nil ? "no cape equipped" : "skin and cape saved")"
+            } catch { if requestID == downloadID { onlineStatus?.stringValue = "Failed to fetch, kept previous skin and cape: \(error.localizedDescription)" } }
         }
     }
     func fetchData(_ address: String, limit: Int) async throws -> Data {
@@ -567,19 +567,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         request.setValue("MinecraftDesktopPet/\(appVersion)-macOS", forHTTPHeaderField: "User-Agent")
         // A byte stream enforces the response limit before retaining a large body.
         let (stream, response) = try await network.bytes(for: request)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw PetError("官方服务返回错误，请检查用户名或稍后重试。") }
-        guard response.url?.scheme == "https", response.url?.host == request.url?.host else { throw PetError("官方服务返回了意外的跳转。") }
-        if response.expectedContentLength > Int64(limit) { throw PetError("官方服务返回的文件过大。") }
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw PetError("Official service returned an error. Check the username or try again later.") }
+        guard response.url?.scheme == "https", response.url?.host == request.url?.host else { throw PetError("Official service returned an unexpected redirect.") }
+        if response.expectedContentLength > Int64(limit) { throw PetError("Official service returned a file that is too large.") }
         var data = Data(); let deadline = Date().addingTimeInterval(30)
         for try await byte in stream {
-            guard data.count < limit, Date() < deadline else { throw PetError("下载超时或文件过大。") }
+            guard data.count < limit, Date() < deadline else { throw PetError("Download timed out or file is too large.") }
             data.append(byte)
         }
         return data
     }
     func fetchJSON(_ url: String) async throws -> [String: Any] {
         let data = try await fetchData(url, limit: 128*1024)
-        guard let dict = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw PetError("官方服务返回的数据无法识别。") }
+        guard let dict = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw PetError("Official service returned unrecognized data.") }
         return dict
     }
     @objc func openDataFolder() { NSWorkspace.shared.open(dataDir) }

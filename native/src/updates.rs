@@ -15,10 +15,10 @@ fn stable_version(tag:&str)->Option<[u32;3]> {
 }
 fn release_comparison(remote:&str,current:&str)->String {
     match (stable_version(remote),stable_version(current)) {
-        (Some(r),Some(c)) if r>c=>"正式版版本号高于当前版本。".into(),
-        (Some(r),Some(c)) if r==c=>"版本号相同，没有更高版本。".into(),
-        (Some(_),Some(_))=>"该正式版比当前版本更旧，没有更高版本。".into(),
-        _=>"无法确认版本先后，不将它判定为新版本。".into(),
+        (Some(r),Some(c)) if r>c=>"A newer release is available.".into(),
+        (Some(r),Some(c)) if r==c=>"You are using the latest release. No newer version available.".into(),
+        (Some(_),Some(_))=>"This release is older than the current version. No newer version available.".into(),
+        _=>"Cannot verify version order; not recognized as a new release.".into(),
     }
 }
 impl App {
@@ -46,7 +46,7 @@ impl App {
     unsafe fn update_button(&self, enabled: bool) {
         if let Some((_,h))=self.controls.iter().find(|x|x.0==170) {
             EnableWindow(*h,enabled as i32);
-            SetWindowTextW(*h,wide(if enabled {"检查更新"} else {"查询中…"}).as_ptr());
+            SetWindowTextW(*h,wide(if enabled {"Check Updates"} else {"Checking…"}).as_ptr());
         }
     }
     pub(super) unsafe fn poll_update(&mut self) {
@@ -61,10 +61,10 @@ impl App {
         match result {
             Ok(tag)=>{
                 let comparison=release_comparison(&tag,VERSION);
-                let message=format!("最新正式版：{tag}\n当前版本：v{VERSION}。\n{comparison}\n\n要打开 GitHub 发布页吗？");
-                if MessageBoxW(self.panel,wide(&message).as_ptr(),wide("检查更新").as_ptr(),MB_YESNO|MB_ICONINFORMATION)==IDYES { self.open_github(true); }
+                let message=format!("Latest release: {tag}\nCurrent version: v{VERSION}.\n{comparison}\n\nOpen GitHub release page?");
+                if MessageBoxW(self.panel,wide(&message).as_ptr(),wide("Check Updates").as_ptr(),MB_YESNO|MB_ICONINFORMATION)==IDYES { self.open_github(true); }
             }
-            Err(_)=>{MessageBoxW(self.panel,wide("Github又宕机了QAQ").as_ptr(),wide("检查更新").as_ptr(),MB_OK|MB_ICONINFORMATION);}
+            Err(_)=>{MessageBoxW(self.panel,wide("Unable to reach GitHub Q_Q").as_ptr(),wide("Check Updates").as_ptr(),MB_OK|MB_ICONINFORMATION);}
         }
     }
 }
@@ -75,18 +75,18 @@ mod tests {
     #[test]
     fn numeric_versions_never_offer_older_or_equal_releases() {
         for tag in ["v2.4.12","v2.4.9","2.3.99","2.4.13"] {
-            assert!(release_comparison(tag,"2.4.13").contains("没有更高版本"));
+            assert!(release_comparison(tag,"2.4.13").contains("No newer version"));
         }
         assert_eq!(stable_version("v2.5"),stable_version("v2.5.0"));
         assert!(stable_version("v2.4.10")>stable_version("v2.4.9"));
-        assert!(release_comparison("v2.4.14","2.4.13").contains("高于"));
-        assert!(release_comparison("v2.5.0","2.4.99").contains("高于"));
+        assert!(release_comparison("v2.4.14","2.4.13").contains("newer release"));
+        assert!(release_comparison("v2.5.0","2.4.99").contains("newer release"));
     }
     #[test]
     fn unknown_and_special_edition_tags_are_not_updates() {
         for tag in ["v2.4.14-beta","v2.4.14-blockbench","latest","v2","v2.4.13.1","v2.4.-1","v2.4.4294967296"] {
             assert!(stable_version(tag).is_none());
-            assert!(release_comparison(tag,"2.4.13").contains("不将它判定为新版本"));
+            assert!(release_comparison(tag,"2.4.13").contains("not recognized as a new release"));
         }
     }
 }

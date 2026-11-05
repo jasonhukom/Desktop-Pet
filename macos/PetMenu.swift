@@ -12,59 +12,59 @@ final class MenuSetting: NSObject {
 extension AppDelegate {
     func buildMenu(_ menu: NSMenu) {
         menu.removeAllItems()
-        add(menu, "打开控制台…", #selector(showSettings), key: ",")
+        add(menu, "Open Settings…", #selector(showSettings), key: ",")
         if startupPending {
-            add(menu, "退出 Minecraft桌宠", #selector(quit), key: "q")
+            add(menu, "Exit Minecraft Desktop Pet", #selector(quit), key: "q")
             return
         }
-        let actions = submenu(menu, "触发动作")
-        for (index, title) in ["打招呼", "开心蹦蹦", "害羞", "鼓掌"].enumerated() {
+        let actions = submenu(menu, "Gestures")
+        for (index, title) in ["Wave", "Jump", "Shy", "Clap"].enumerated() {
             add(actions, title, #selector(triggerGesture(_:))).tag = index
         }
-        add(actions, "喂食苹果", #selector(feedApple))
+        add(actions, "Feed Apple", #selector(feedApple))
         menu.addItem(.separator())
         let posture = settings["posture"] as? String ?? "standing"
-        let postureNames = ["standing": "站立", "sitting": "坐下", "custom": "自定义姿态"]
-        choices(submenu(menu, "姿态：\(postureNames[posture] ?? "站立")"), "posture",
-                [("站立", "standing"), ("坐下", "sitting"), ("自定义姿态", "custom")])
-        let look = submenu(menu, "外观")
-        add(look, "导入 PNG 皮肤…", #selector(importSkin))
+        let postureNames = ["standing": "Standing", "sitting": "Sitting", "custom": "Custom Pose"]
+        choices(submenu(menu, "Pose: \(postureNames[posture] ?? "Standing")"), "posture",
+                [("Standing", "standing"), ("Sitting", "sitting"), ("Custom Pose", "custom")])
+        let look = submenu(menu, "Appearance")
+        add(look, "Import PNG Skin…", #selector(importSkin))
         look.addItem(.separator())
-        choices(look, "armModel", [("经典手臂", "classic"), ("纤细手臂", "slim")])
+        choices(look, "armModel", [("Classic Arms", "classic"), ("Slim Arms", "slim")])
         look.addItem(.separator())
-        toggle(look, "显示正版披风", "showCape")
-        toggle(look, "Q 版小人", "chibi")
+        toggle(look, "Show Cape", "showCape")
+        toggle(look, "Chibi", "chibi")
         let scale = number("scale")
-        let sizes = submenu(menu, "大小：\(Int((scale * 100).rounded()))%")
+        let sizes = submenu(menu, "Scale: \(Int((scale * 100).rounded()))%")
         for value in [0.75, 1.0, 1.25, 1.5] {
             let item = add(sizes, "\(Int(value * 100))%", #selector(menuChoice(_:)), state: abs(scale - value) < 0.001)
             item.representedObject = MenuSetting("scale", value)
         }
         let hand = settings["mainHand"] as? String ?? "right"
-        let handNames = ["right": "右手", "left": "左手", "mapped": "实际映射", "reverse": "反向映射"]
-        choices(submenu(menu, "鼠标挥动：\(handNames[hand] ?? "右手")"), "mainHand",
-                [("右手", "right"), ("左手", "left"), ("实际映射", "mapped"), ("反向映射", "reverse")])
-        let typing = !flag("keyboardEnabled") ? "已关闭"
-            : settings["typingMode"] as? String == "alternating" ? "双手交替" : "精准按键"
-        let keys = submenu(menu, "键盘互动：\(typing)")
-        toggle(keys, "全局键盘互动", "keyboardEnabled")
+        let handNames = ["right": "Right Hand", "left": "Left Hand", "mapped": "Physical Map", "reverse": "Inverted Map"]
+        choices(submenu(menu, "Mouse Wave: \(handNames[hand] ?? "Right Hand")"), "mainHand",
+                [("Right Hand", "right"), ("Left Hand", "left"), ("Physical Map", "mapped"), ("Inverted Map", "reverse")])
+        let typing = !flag("keyboardEnabled") ? "Disabled"
+            : settings["typingMode"] as? String == "alternating" ? "Alternating" : "Precise"
+        let keys = submenu(menu, "Keyboard: \(typing)")
+        toggle(keys, "Keyboard Interaction", "keyboardEnabled")
         keys.addItem(.separator())
-        choices(keys, "typingMode", [("精准按键", "precise"), ("双手交替", "alternating")])
+        choices(keys, "typingMode", [("Precise", "precise"), ("Alternating", "alternating")])
         keys.addItem(.separator())
-        add(keys, "hyp 快速聊天：# → /p chat", #selector(toggleQuickChat), state: flag("hypQuickChat"))
-        add(keys, "申请输入监控…", #selector(grantInput))
-        add(keys, "申请辅助功能（快速聊天）…", #selector(grantAccessibility))
+        add(keys, "hyp quick chat: # → /p chat", #selector(toggleQuickChat), state: flag("hypQuickChat"))
+        add(keys, "Request Input Monitoring…", #selector(grantInput))
+        add(keys, "Request Accessibility (Quick Chat)…", #selector(grantAccessibility))
         menu.addItem(.separator())
-        toggle(menu, "保持置顶", "alwaysOnTop")
-        toggle(menu, "完全鼠标穿透", "clickThrough")
-        toggle(menu, "视线跟随鼠标", "trackMouse")
-        let desk = submenu(menu, "桌面与启动")
-        add(desk, "移到屏幕中央", #selector(recenter))
-        add(desk, hidden ? "显示桌宠" : "暂时隐藏桌宠", #selector(toggleHidden))
+        toggle(menu, "Always on Top", "alwaysOnTop")
+        toggle(menu, "Click-Through", "clickThrough")
+        toggle(menu, "Track Mouse", "trackMouse")
+        let desk = submenu(menu, "Desktop & Startup")
+        add(desk, "Center on Screen", #selector(recenter))
+        add(desk, hidden ? "Show Pet" : "Hide Pet", #selector(toggleHidden))
         desk.addItem(.separator())
-        toggle(desk, "随 macOS 登录启动", "autostart")
+        toggle(desk, "Start with macOS", "autostart")
         menu.addItem(.separator())
-        add(menu, "退出 Minecraft桌宠", #selector(quit), key: "q")
+        add(menu, "Exit Minecraft Desktop Pet", #selector(quit), key: "q")
     }
     func menuWillOpen(_ menu: NSMenu) { buildMenu(menu); menuOpen = true; updateHold() }
     func menuDidClose(_ menu: NSMenu) { menuOpen = false }

@@ -62,11 +62,11 @@ extension AppDelegate {
         let chibi = button("chibi"); chibi.state = .on; controlChanged(chibi); save(); loadSettings()
         precondition(flag("chibi") && flag("daBlink"), "Turning on Q mode keeps DA blink (2.5.1)")
         precondition(button("daBlink").isEnabled && button("daBlink").state == .on, "DA blink stays available in Q mode")
-        // 2.5.3: PAT喵！ row on 常规; keyboard style and colour moved to 自定义姿态.
-        precondition(keyboardColorField == nil, "Keyboard colour left the 常规 page")
+        // 2.5.3: PAT Meow! row on General; keyboard style and colour moved to Custom Pose.
+        precondition(keyboardColorField == nil, "Keyboard colour left the General page")
         let pat = button("patEnabled"), patOn = !flag("patEnabled")
         pat.state = patOn ? .on : .off; controlChanged(pat); save(); loadSettings()
-        precondition(flag("patEnabled") == patOn, "PAT喵！ persists")
+        precondition(flag("patEnabled") == patOn, "PAT Meow! persists")
         let volume = all().compactMap { $0 as? NSSlider }.first { bindings[ObjectIdentifier($0)]?.key == "patVolume" }!
         volume.doubleValue = 72.4; controlChanged(volume); save(); loadSettings()
         precondition(settings["patVolume"] as? Int == 72, "Sound volume is stored as a whole percent")
@@ -74,7 +74,7 @@ extension AppDelegate {
         precondition(patSound.loaded, "Both PAT meows are bundled")
         let patRow = volume.frame.minY, otherRow = button("showCape").frame.minY, squashRow = all().compactMap { $0 as? NSSlider }
             .first { bindings[ObjectIdentifier($0)]?.key == "chibiBodyScale" }!.frame.minY
-        precondition(otherRow < patRow && patRow < squashRow, "PAT row sits between Q 版身体大小 and 其他")
+        precondition(otherRow < patRow && patRow < squashRow, "PAT row sits between Chibi Body Scale and Other")
         let lock = lockDoubleClickBox!
         lock.state = .on; toggleLockDoubleClick(lock); save(); loadSettings()
         precondition(flag("lockDoubleClick") && !openConsoleOnDoubleClick(), "Locked double-click keeps the console closed")
@@ -82,7 +82,7 @@ extension AppDelegate {
         precondition(!flag("lockDoubleClick"))
         for (keyboard, chat) in [(false, false), (true, false), (false, true), (true, true)] {
             let text = PermissionLook.summaryText(keyboardAuthorized: keyboard, chatAuthorized: chat)
-            precondition(text.keyboard == (keyboard ? "键盘互动已授权" : "键盘互动未授权") && text.chat == (chat ? "快速聊天已授权" : "快速聊天未授权"))
+            precondition(text.keyboard == ("Keyboard: " + (keyboard ? "Authorized" : "Unauthorized")) && text.chat == ("Quick Chat: " + (chat ? "Authorized" : "Unauthorized")))
             let line = PermissionLook.summary(keyboardAuthorized: keyboard, chatAuthorized: chat)
             let first = line.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor
             let last = line.attribute(.foregroundColor, at: line.length - 1, effectiveRange: nil) as? NSColor
@@ -90,7 +90,7 @@ extension AppDelegate {
                          "Status line: green when authorized, red when not")
         }
         let shown = permissionSummary!.attributedStringValue.string
-        precondition(shown.hasPrefix("键盘互动") && shown.contains("快速聊天") && !shown.contains("连接"), "Console shows authorization, not connection")
+        precondition(shown.hasPrefix("Keyboard:") && shown.contains("Quick Chat:") && !shown.contains("Connection"), "Console shows authorization, not connection")
         pageButtons[2].performClick(nil)
         for style in ["simple", "detailed"] {
             let radio = all().compactMap { $0 as? NSButton }.first {
@@ -107,20 +107,20 @@ extension AppDelegate {
         pageButtons[0].performClick(nil)
         let menu = NSMenu(); buildMenu(menu)
         let tops = menu.items.map(\.title)
-        for prefix in ["打开控制台", "触发动作", "姿态：", "外观", "大小：", "鼠标挥动：", "键盘互动：", "保持置顶", "完全鼠标穿透", "视线跟随鼠标", "桌面与启动", "退出"] {
+        for prefix in ["Open Settings", "Gestures", "Pose:", "Appearance", "Scale:", "Mouse Wave:", "Keyboard:", "Always on Top", "Click-Through", "Track Mouse", "Desktop & Startup", "Exit"] {
             precondition(tops.contains { $0.hasPrefix(prefix) }, "Menu has \(prefix)")
         }
-        let gestures = menu.items.first { $0.title == "触发动作" }!.submenu!.items.map(\.title)
-        precondition(gestures == ["打招呼", "开心蹦蹦", "害羞", "鼓掌", "喂食苹果"], "Gesture submenu order")
-        let sizeMenu = menu.items.first { $0.title.hasPrefix("大小：") }!.submenu!
+        let gestures = menu.items.first { $0.title == "Gestures" }!.submenu!.items.map(\.title)
+        precondition(gestures == ["Wave", "Jump", "Shy", "Clap", "Feed Apple"], "Gesture submenu order")
+        let sizeMenu = menu.items.first { $0.title.hasPrefix("Scale:") }!.submenu!
         func click(_ item: NSMenuItem) { precondition(NSApp.sendAction(item.action!, to: item.target, from: item), "Menu action: \(item.title)") }
         click(sizeMenu.items.first { $0.title == "125%" }!); save(); loadSettings()
         precondition(abs(number("scale") - 1.25) < 0.001 && pet.frame.width == 450, "Menu size choice applies")
         click(sizeMenu.items.first { $0.title == "100%" }!); save()
-        let topToggle = menu.items.first { $0.title == "保持置顶" }!, wasTop = flag("alwaysOnTop")
+        let topToggle = menu.items.first { $0.title == "Always on Top" }!, wasTop = flag("alwaysOnTop")
         click(topToggle); precondition(flag("alwaysOnTop") == !wasTop, "Menu toggle flips setting")
         click(topToggle); precondition(flag("alwaysOnTop") == wasTop, "Reused menu item flips back")
-        let waveItem = menu.items.first { $0.title == "触发动作" }!.submenu!.items[0]
+        let waveItem = menu.items.first { $0.title == "Gestures" }!.submenu!.items[0]
         click(waveItem); precondition(pet_needs_frames(core, now), "Wave gesture wakes the frame timer")
         precondition(!pet_gesture(core, 99, now), "Unknown gesture is rejected")
         let reverse = all().compactMap { $0 as? NSButton }.first {
@@ -140,7 +140,7 @@ extension AppDelegate {
         let footerControls = controls(panel!.contentView!)
         let github = footerControls.compactMap { $0 as? NSButton }.first { $0.title == "GitHub" }!
         precondition(github.image != nil, "Bundled GitHub icon is present")
-        precondition(!footerControls.compactMap { $0 as? NSTextField }.contains { $0.stringValue.contains("制作") }, "Console has no credit line")
+        precondition(!footerControls.compactMap { $0 as? NSTextField }.contains { $0.stringValue.contains("Created by") }, "Console has no credit line")
         precondition(!footerControls.compactMap { $0 as? NSTextField }.contains { $0.stringValue.contains("Apple Music") })
         loadSettings(); precondition(settings["mainHand"] as? String == "reverse")
         precondition(number("autostartDelay") == 120)

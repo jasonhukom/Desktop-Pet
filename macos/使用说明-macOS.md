@@ -1,59 +1,57 @@
-# Minecraft桌宠 v2.5 · macOS
+# Minecraft Desktop Pet v2.5 · macOS
 
-与 Windows v2.5.3 主版本同步的 macOS 版，Apple Silicon / Intel 通用架构：Apple Silicon 需 macOS 12 及以上，Intel 需 macOS 13 及以上。此版本属于主线普通版，不含 Blockbench 兼容版。
+macOS edition synchronized with the Windows v2.5.3 main release, built as a universal binary for Apple Silicon / Intel: Apple Silicon requires macOS 12+, Intel requires macOS 13+. This release is the mainline standard edition, without the Blockbench compatibility layer.
 
-## 启动与权限
+## Startup & Permissions
 
-将完整的 Minecraft桌宠.app 放到固定位置后打开。菜单栏方块图标可以打开控制台、喂食苹果、找回桌宠和退出。
-默认完全鼠标穿透；取消“完全鼠标穿透”后可以拖动，双击打开控制台（勾选控制台底部“锁定双击”后双击不再打开），右键显示菜单。穿透开启时仍可使用菜单栏喂食。
+Place the complete `Minecraft Desktop Pet.app` (or `Minecraft桌宠.app`) in a fixed location (e.g. `/Applications`) and open it. The menu bar icon allows opening settings, feeding an apple, recentering the pet, and quitting.
+Full click-through is enabled by default; disabling "Click-Through" allows dragging the pet, double-clicking opens Settings (unless "Lock double-click" is checked), and right-clicking displays the context menu. You can still feed apples from the menu bar when click-through is enabled.
 
-控制台右上角“输入权限…”提供输入监控、辅助功能、重新检测、重启及输入测试。
-全局键盘互动需要输入监控权限；快速聊天需要辅助功能权限。更新临时签名版本后，系统可能要求重新授权。
-权限窗口颜色：输入监控与辅助功能都生效为绿色，只有一项生效为黄色，都未生效为红色。点击“申请输入监控”或“申请辅助功能”会打开系统设置对应列表，并在旁边显示应用图标卡片；把卡片拖进列表并打开开关即可。若系统显示已授权但角色只在本应用窗口内敲字，多半是旧版本留下的授权记录：先在列表中删除旧条目（“−”），再拖入并重启应用。
-输入半角 # 自动填入 /p chat（末尾另有一个空格），不自动发送；不使用剪贴板。长按只替换一次。
-软件不记录或上传输入文本。系统安全输入（例如密码框）可能暂时阻止全局按键监听。
+"Input Permissions…" in the top-right of Settings provides Input Monitoring, Accessibility, re-checking, restart, and input test diagnostics.
+Global keyboard interaction requires Input Monitoring; quick chat requires Accessibility permissions. Updating ad-hoc signed builds may require reauthorizing.
 
-## 三页原生控制台
+Permission indicators: green when both are satisfied, yellow when only one is granted, red when neither is granted. Clicking "Request Input Monitoring" or "Request Accessibility" opens the corresponding System Settings list and shows an application icon card; drag the card into the list and toggle the switch on. If System Settings shows granted but the pet only types inside this app's windows, delete the old entry ("−") and drag the card in again, then restart.
 
-- **常规**：皮肤与披风、姿态、手臂、主手映射、所有互动开关、帧率、缩放、Q 版比例及登录自启。
-- **视线与角度**：头部跟随、灵敏度、范围、中心偏移及整体 X/Y/Z 角度。
-- **自定义姿态**：选择站姿或坐姿后编辑六个部位的 X/Y/Z。两套姿态分别保存，调整时启用自定义姿态。
+Typing `#` automatically fills `/p chat ` (with a trailing space) without sending or touching the clipboard.
 
-设置自动保存；关闭控制台只关闭设置窗口。深浅外观跟随 macOS。布局参照 Windows 三页控制台，保留 macOS 原生控件、权限入口，以及 GitHub 图标。“恢复内置”只恢复皮肤，“恢复默认”重置全部设置。
-已移除渲染线程 QoS 功能，旧 startupPriority 配置会被忽略；保留登录自启与登录延迟。
+The software does not record or upload typed text. Secure text input (such as password fields) temporarily pauses global keyboard listening.
 
-## v2.5 新互动
+## Three-Page Native Settings Console
 
-- **DA 眨眼**：需要带对应眼睛素材与标记的修改版皮肤；普通皮肤开启后不保证产生眨眼。Q 版自动关闭此项。
-- **DA 扭腰**：仅普通站姿自动潜行并扭腰，无需长按 Shift；坐姿与自定义姿态不触发。
-- **Q 版小人**：头部大小保持不变，“Q版身体”同步缩放躯干与四肢。
-- **四种主手**：右手、左手、实际映射、反向映射。实际映射中，左键和两个侧键挥左手，中键及右键挥右手。
-- **喂食苹果**：菜单栏或桌宠右键菜单触发；适配站立、坐下与 Q 版。
-- **敲字浮现字**：坐姿按键位置浮出糖果色字符，0.8 秒淡出。采用 macOS 原生粗体字形，长按不重复生成。
-- **音乐音符**：仅在网易云音乐、QQ 音乐、Apple Music、Spotify 播放时显示。通过 Core Audio 读取各进程是否在输出音频及其应用标识，不录音，不读取音频样本或曲目内容，不主动启动播放器，也不需要播放器自动化权限。
-- **可调戏**：点击桌宠可见区域，随机摇头或摆臂；完全穿透时也可触发。调戏优先打断喂食与挥手，结束后恢复姿态及仍按住的键。
-- **PAT喵！**：点击桌宠时出现一只手摸头，并随机播放两段喵声之一，音量由“音效大小”调节。在桌宠上按住左键 0.5 秒且不大幅移动，会持续摸头；移动超过约 30 点或松开即结束。
-- **键盘样式与色号**：在“自定义姿态”页底部，可选简洁或细节键盘，并输入六位十六进制色号。
-- **持续呼吸**：开启后持续轻微呼吸，包括其他动作期间。
+- **General**: Skin and cape, posture, arms, main hand mapping, all interaction toggles, frame rate, scale, chibi proportion, and login autostart.
+- **Look & Rotation**: Head tracking, sensitivity, range, center offset, and overall X/Y/Z model rotation.
+- **Custom Pose**: Select standing or sitting to edit X/Y/Z angles for six body parts. Standing and sitting poses are saved independently.
 
-Apple Music 与 Spotify 播放、暂停时会向系统广播状态，收到后以广播为准，暂停后音符随即停止。网易云音乐和 QQ 音乐没有这种广播，只能看输出流。macOS 14.2 及以上只看这四款播放器（含其辅助进程）的输出流，网页、游戏和其他应用的声音不会触发。macOS 12.0–14.1 没有逐进程信息，回退为“上述播放器已打开且输出设备在运行”，此时其他应用的声音也可能触发。它不是音量识别：静音但仍保持输出流的播放器也可能触发。停止播放后音符会消退，轮询间隔约一秒。
+Settings are saved automatically; closing the settings panel only closes the window. Light and dark modes follow macOS system appearance. "Reset Skin" only resets the skin; "Reset Defaults" resets all settings.
 
-## 皮肤与披风
+## v2.5 Interactions
 
-可导入 64×64、64×32 或等比例高清 PNG（最大 1024×1024、8 MB），或者主动输入 Java 版用户名 / UUID 获取官方皮肤及披风。
-导入文件会复制到本应用设置目录，删除原始文件不会影响已导入内容。升级沿用普通版配置：
-~/Library/Application Support/MinecraftDesktopPet-macOS/
-独立 Blockbench 版配置不参与迁移。不要将自定义 --data-dir 测试目录用作正式配置目录。
+- **DA Blink**: Requires custom skin with eye textures and markers. Automatically disabled in Chibi mode.
+- **DA Dance**: Automatically sneaks and sways in standard standing posture without holding Shift; sitting and custom poses do not trigger.
+- **Chibi Character**: Head size is preserved; "Chibi Body Scale" scales torso and limbs.
+- **Four Main Hands**: Right hand, left hand, physical map, inverted map.
+- **Feed Apple**: Triggered via menu bar or right-click menu; adapts to standing, sitting, and chibi postures.
+- **Typing Letters**: Keystroke positions float candy-colored letters that fade out in 0.8s. Uses native macOS bold typography.
+- **Music Notes**: Displays notes during active playback in supported players (Apple Music, Spotify, Netease Cloud Music, QQ Music). Reads process audio session flags via Core Audio without recording audio or inspecting track content.
+- **Interactable**: Clicking visible areas shakes head or swings arms. Holding left click for 0.5s triggers head patting.
+- **PAT Meow!**: Hand appears to pat the head with random meow sound effects, volume controlled by "Sound Volume".
+- **Keyboard Style & Color**: At bottom of "Custom Pose", choose Simple or Detailed style, and customize 6-digit hex color.
+- **Breathing**: Subtle continuous breathing animation.
 
-## 登录启动与更新
+## Skins & Capes
 
-登录启动仅为当前用户注册 LaunchAgent；登录时只显示桌宠，即使输入权限尚未就绪也不会弹出控制台。手动启动不等待登录延迟。移动应用后手动打开一次可更新启动路径。
-“检查更新”只在点击后查询 GitHub 正式版，按数字版本比较，排除预发布和特殊版本。下载与安装由用户执行；发布页可能先提供 Windows 包，界面会提示是否发现 macOS 资源。
+Import 64×64, 64×32, or high-res PNG skins (up to 1024×1024, 8 MB), or enter a Java Edition username / UUID to download official skins and capes.
+Imported files are copied to the application data directory:
+`~/Library/Application Support/MinecraftDesktopPet-macOS/`
 
-## 性能与验证范围
+## Login Startup & Updates
 
-Rust 渲染器与轻量 AppKit 界面。只构建当前设置页，关闭窗口后释放控件；复用像素缓冲，高清皮肤使用小型光照查找表。
-可降低帧率上限减少 CPU 使用；开启持续动画会持续绘制，隐藏时暂停。内存验收数据与未验证项目见同目录“更新与验证.md”，不以压缩包大小替代运行内存。
+Login startup registers a user LaunchAgent.
+"Check Updates" queries GitHub stable releases, comparing numerical versions.
 
-本地构建采用 ad-hoc 签名，未包含 Developer ID 签名或 Apple 公证。
-项目为独立粉丝作品，与 Mojang、Microsoft 无隶属关系。许可及第三方资源来源随应用提供。
+## Performance
+
+Rust renderer with lightweight AppKit UI. Reuses pixel buffers and uses lightweight lookup tables for HD skins.
+Adjustable frame rate ceiling to minimize CPU usage; pauses rendering when idle or hidden.
+
+Independent fan work; not affiliated with Mojang Studios or Microsoft.

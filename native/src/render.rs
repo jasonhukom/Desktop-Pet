@@ -79,16 +79,16 @@ pub struct Cape {
 impl Cape {
     pub fn load(bytes: &[u8]) -> Result<Self, String> {
         if bytes.len() > 2 * 1024 * 1024 {
-            return Err("披风文件不能超过 2 MB。".into());
+            return Err("Cape file cannot exceed 2 MB.".into());
         }
         if !bytes.starts_with(&[137, 80, 78, 71, 13, 10, 26, 10]) || bytes.len() < 24 {
-            return Err("披风不是有效的 PNG。".into());
+            return Err("Cape is not a valid PNG.".into());
         }
         let image = image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
             .map_err(|e| e.to_string())?
             .into_rgba8();
         if image.width() < 64 || image.width() % 64 != 0 || image.height() * 2 != image.width() {
-            return Err("披风纹理尺寸异常。".into());
+            return Err("Invalid cape texture dimensions.".into());
         }
         let colors = colors_for(&image);
         Ok(Self { image, colors })

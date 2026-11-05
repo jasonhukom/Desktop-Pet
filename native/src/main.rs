@@ -36,7 +36,7 @@ static mut PET_HWND: HWND = null_mut();
 static mut TEST_INPUT_ONLY: bool = false;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn product_title() -> String {
-    format!("Minecraft桌宠 · v{}", VERSION.strip_suffix(".0").unwrap_or(VERSION))
+    format!("Minecraft Desktop Pet · v{}", VERSION.strip_suffix(".0").unwrap_or(VERSION))
 }
 pub fn wide(s: &str) -> Vec<u16> {
     s.encode_utf16().chain(Some(0)).collect()
@@ -370,8 +370,8 @@ impl App {
     fn save(&mut self) {
         self.slider_pending = false;
         match self.store.save(&self.settings) {
-            Ok(()) => self.notice = "已保存".into(),
-            Err(e) => self.notice = format!("保存失败：{e}"),
+            Ok(()) => self.notice = "Saved".into(),
+            Err(e) => self.notice = format!("Save failed: {e}"),
         };
         unsafe {
             if !self.status.is_null() {
@@ -804,7 +804,7 @@ impl App {
                 0,
             );
             if self.hook.is_null() {
-                self.notice = "全局键盘监听未启动，请关闭后重新开启。".into();
+                self.notice = "Global keyboard listener not started, please toggle it off and on again.".into();
             }
         }
         self.reset_keys();
@@ -872,7 +872,7 @@ impl App {
                 self.online_notice.clear();
                 self.skin = Skin::load(render::DEFAULT_SKIN).unwrap();
                 self.settings.skin_path.clear();
-                self.settings.skin_name = "内置 · 林间旅人".into();
+                self.settings.skin_name = "Built-in · Forest Traveler".into();
                 self.changed();
             }
             110 => {
@@ -916,7 +916,7 @@ impl App {
             }
             115 => {
                 if self.skin.legacy {
-                    report_error("旧版 64×32 皮肤仅支持经典手臂。");
+                    report_error("Legacy 64×32 skins only support classic arms.");
                 } else {
                     self.settings.arm_model = "slim".into();
                     self.changed();
@@ -981,7 +981,7 @@ impl App {
                         self.changed();
                     }
                     Err(e) => {
-                        self.notice = format!("开机自启设置失败：{e}");
+                        self.notice = format!("Failed to set autostart: {e}");
                         self.refresh_panel();
                     }
                 }
@@ -993,7 +993,7 @@ impl App {
                     self.settings.keyboard_color = color;
                     SetWindowTextW(self.ctrl(334), wide(&self.settings.keyboard_color).as_ptr());
                     self.changed();
-                } else { report_error("请输入六位十六进制色号，例如 #83878A。"); }
+                } else { report_error("Please enter a 6-digit hex color code, e.g. #83878A."); }
             }
             130 => self.center(),
             131 => {
@@ -1098,64 +1098,64 @@ impl App {
             for &(id, text, checked) in items { append(child, id, text, checked); }
             AppendMenuW(menu, MF_POPUP | MF_STRING, child as usize, wide(label).as_ptr());
         };
-        append(menu, 100, "打开控制台", false);
-        submenu("触发动作", &[
-            (178,"打招呼",false),(179,"开心蹦蹦",false),
-            (180,"害羞",false),(181,"鼓掌",false),(168,"喂食苹果",false),
+        append(menu, 100, "Open Settings", false);
+        submenu("Gestures", &[
+            (178,"Wave",false),(179,"Jump",false),
+            (180,"Shy",false),(181,"Clap",false),(168,"Feed Apple",false),
         ]);
         append(menu, 0, "", false);
         let posture = match self.settings.posture.as_str() {
-            "sitting" => "坐下", "custom" => "自定义姿态", _ => "站立",
+            "sitting" => "Sitting", "custom" => "Custom Pose", _ => "Standing",
         };
-        submenu(&format!("姿态：{posture}"), &[
-            (110, "站立", self.settings.posture == "standing"),
-            (111, "坐下", self.settings.posture == "sitting"),
-            (117, "自定义姿态", self.settings.posture == "custom"),
+        submenu(&format!("Pose: {posture}"), &[
+            (110, "Standing", self.settings.posture == "standing"),
+            (111, "Sitting", self.settings.posture == "sitting"),
+            (117, "Custom Pose", self.settings.posture == "custom"),
         ]);
-        submenu("外观", &[
-            (101, "导入皮肤…", false),
+        submenu("Appearance", &[
+            (101, "Import Skin…", false),
             (0, "", false),
-            (114, "经典手臂", self.settings.arm_model == "classic"),
-            (115, "纤细手臂", self.settings.arm_model == "slim"),
+            (114, "Classic Arms", self.settings.arm_model == "classic"),
+            (115, "Slim Arms", self.settings.arm_model == "slim"),
             (0, "", false),
-            (138, "显示正版披风", self.settings.show_cape),
-            (139, "Q版小人", self.settings.chibi),
+            (138, "Show Cape", self.settings.show_cape),
+            (139, "Chibi", self.settings.chibi),
         ]);
-        submenu(&format!("大小：{:.0}%", self.settings.scale * 100.), &[
+        submenu(&format!("Scale: {:.0}%", self.settings.scale * 100.), &[
             (140, "75%", (self.settings.scale - 0.75).abs() < 0.001),
             (141, "100%", (self.settings.scale - 1.).abs() < 0.001),
             (142, "125%", (self.settings.scale - 1.25).abs() < 0.001),
             (143, "150%", (self.settings.scale - 1.5).abs() < 0.001),
         ]);
         let hand = match self.settings.main_hand.as_str() {
-            "left" => "左手", "mapped" => "实际映射", "reverse" => "反向映射", _ => "右手",
+            "left" => "Left Hand", "mapped" => "Physical Map", "reverse" => "Inverted Map", _ => "Right Hand",
         };
-        submenu(&format!("鼠标挥动：{hand}"), &[
-            (118, "右手", self.settings.main_hand == "right"),
-            (119, "左手", self.settings.main_hand == "left"),
-            (165, "实际映射", self.settings.main_hand == "mapped"),
-            (166, "反向映射", self.settings.main_hand == "reverse"),
+        submenu(&format!("Mouse Wave: {hand}"), &[
+            (118, "Right Hand", self.settings.main_hand == "right"),
+            (119, "Left Hand", self.settings.main_hand == "left"),
+            (165, "Physical Map", self.settings.main_hand == "mapped"),
+            (166, "Inverted Map", self.settings.main_hand == "reverse"),
         ]);
-        let typing = if !self.settings.keyboard_enabled { "已关闭" }
-            else if self.settings.typing_mode == "alternating" { "双手交替" } else { "精准按键" };
-        submenu(&format!("键盘互动：{typing}"), &[
-            (122, "全局键盘互动", self.settings.keyboard_enabled),
+        let typing = if !self.settings.keyboard_enabled { "Disabled" }
+            else if self.settings.typing_mode == "alternating" { "Alternating" } else { "Precise" };
+        submenu(&format!("Keyboard: {typing}"), &[
+            (122, "Keyboard Interaction", self.settings.keyboard_enabled),
             (0, "", false),
-            (112, "精准按键", self.settings.typing_mode == "precise"),
-            (113, "双手交替", self.settings.typing_mode == "alternating"),
+            (112, "Precise", self.settings.typing_mode == "precise"),
+            (113, "Alternating", self.settings.typing_mode == "alternating"),
         ]);
         append(menu, 0, "", false);
-        append(menu, 120, "保持置顶", self.settings.always_on_top);
-        append(menu, 121, "完全鼠标穿透", self.settings.click_through);
-        append(menu, 123, "视线跟随鼠标", self.settings.track_mouse);
-        submenu("桌面与启动", &[
-            (130, "移到屏幕中央", false),
-            (131, if self.hidden { "显示桌宠" } else { "暂时隐藏桌宠" }, false),
+        append(menu, 120, "Always on Top", self.settings.always_on_top);
+        append(menu, 121, "Click-Through", self.settings.click_through);
+        append(menu, 123, "Track Mouse", self.settings.track_mouse);
+        submenu("Desktop & Startup", &[
+            (130, "Center on Screen", false),
+            (131, if self.hidden { "Show Pet" } else { "Hide Pet" }, false),
             (0, "", false),
-            (160, "随 Windows 登录启动", self.settings.autostart),
+            (160, "Start with Windows", self.settings.autostart),
         ]);
         append(menu, 0, "", false);
-        append(menu, 199, "退出 Minecraft桌宠", false);
+        append(menu, 199, "Exit Minecraft Desktop Pet", false);
         let mut p = POINT { x: 0, y: 0 };
         GetCursorPos(&mut p);
         SetForegroundWindow(self.hwnd);
@@ -1185,7 +1185,7 @@ impl App {
         data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
         data.uCallbackMessage = TRAY_MSG;
         data.hIcon = self.icon;
-        let tip = wide(&format!("Minecraft桌宠 v{VERSION} · 右键设置 / 双击控制台"));
+        let tip = wide(&format!("Minecraft Desktop Pet v{VERSION} · Right-click menu / Double-click settings"));
         let len = tip.len().min(data.szTip.len());
         data.szTip[..len].copy_from_slice(&tip[..len]);
         Shell_NotifyIconW(action, &data) != 0
@@ -1572,7 +1572,7 @@ fn main() {
         );
         if hwnd.is_null() {
             report_error(&format!(
-                "窗口创建失败：{}",
+                "Failed to create window: {}",
                 std::io::Error::last_os_error()
             ));
             return;
@@ -1605,7 +1605,7 @@ fn main() {
         }
         if !app.tray_ok {
             app.notice = format!(
-                "托盘图标添加失败（错误 {}）；可再次双击程序或从控制台打开设置。",
+                "Failed to add tray icon (error {}); double-click the app again or open settings from the console.",
                 app.tray_error
             );
         }

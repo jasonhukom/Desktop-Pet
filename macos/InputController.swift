@@ -134,8 +134,8 @@ final class InputController {
          "replacementCount": replacementCount, "timeoutCount": timeoutCount]
     }
     var diagnosticSummary: String {
-        if secureInput { return "系统安全输入已开启，暂时无法获取全局按键。" }
-        return "收到按下 \(keyDownCount) / 松开 \(keyUpCount) · 井号替换 \(replacementCount) 次\n\(failure)"
+        if secureInput { return "Secure input enabled; temporarily cannot capture global keystrokes." }
+        return "Received down \(keyDownCount) / up \(keyUpCount) · Quick chat replaced \(replacementCount) time(s)\n\(failure)"
     }
     func configure(keyboard: Bool, quickChat: Bool) {
         if keyboardEnabled && !keyboard { held.removeAll(); onReset?() }
@@ -186,7 +186,7 @@ final class InputController {
             guard let created = CGEvent.tapCreate(tap: location, place: .headInsertEventTap,
                 options: options, eventsOfInterest: TapHealth.mask, callback: callback,
                 userInfo: Unmanaged.passUnretained(self).toOpaque()) else {
-                failure = "系统拒绝键盘监听，请重新授权并重启应用。"; continue
+                failure = "System denied keyboard event tap. Please reauthorize and restart the app."; continue
             }
             let info = TapHealth.installed()?.first {
                 !before.contains($0.eventTapID) && $0.tappingProcess == getpid() && $0.tapPoint == location && $0.options == options
@@ -195,7 +195,7 @@ final class InputController {
             guard TapHealth.hasKeys(candidateMask) else {
                 CGEvent.tapEnable(tap: created, enable: false); CFMachPortInvalidate(created)
                 if !keepListener { effectiveMask = candidateMask }
-                failure = "系统未开放普通按键（mask=0x\(String(candidateMask, radix:16))），请重新授权并重启。"
+                failure = "System did not grant standard key events (mask=0x\(String(candidateMask, radix:16))). Please reauthorize and restart."
                 continue
             }
             if keepListener { stopTap() }

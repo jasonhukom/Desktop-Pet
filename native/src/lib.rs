@@ -206,7 +206,7 @@ pub unsafe extern "C" fn pet_restore_skin(core: *mut PetCore) -> bool {
     let Some(c) = core.as_mut() else { return false; };
     let mut next = c.settings.clone();
     next.skin_path.clear();
-    next.skin_name = "内置 · 林间旅人".into();
+    next.skin_name = "Built-in · Forest Traveler".into();
     // Match the Windows restore-skin command: keep poses, cape, startup and
     // interaction preferences. Commit successfully before changing the render.
     if let Err(e) = c.store.save(&next) { return c.error(e); }
@@ -337,7 +337,7 @@ mod ffi_tests {
             (*core).settings.autostart = true;
             (*core).settings.music_notes = true;
             let mut expected = (*core).settings.clone();
-            expected.skin_name = "内置 · 林间旅人".into();
+            expected.skin_name = "Built-in · Forest Traveler".into();
             expected.skin_path.clear();
             assert!(pet_restore_skin(core));
             assert_eq!(serde_json::to_value(&(*core).settings).unwrap(), serde_json::to_value(&expected).unwrap());

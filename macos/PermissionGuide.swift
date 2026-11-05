@@ -4,7 +4,7 @@ import ApplicationServices
 /// Privacy & Security lists that accept an app dragged in from Finder.
 enum PrivacyPane {
     case inputMonitoring, accessibility
-    var title: String { self == .inputMonitoring ? "输入监控" : "辅助功能" }
+    var title: String { self == .inputMonitoring ? "Input Monitoring" : "Accessibility" }
     /// tccutil(1) service name; also the System Settings anchor after "Privacy_".
     var service: String { self == .inputMonitoring ? "ListenEvent" : "Accessibility" }
     var url: URL { URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_\(service)")! }
@@ -33,7 +33,7 @@ final class DraggableAppView: NSView, NSDraggingSource {
         let name = NSTextField(labelWithString: FileManager.default.displayName(atPath: bundleURL.path))
         name.font = .systemFont(ofSize: 14, weight: .semibold)
         name.frame = NSRect(x: 56, y: (frame.height - 20) / 2, width: frame.width - 66, height: 20); addSubview(name)
-        setAccessibilityLabel("拖动 \(name.stringValue) 到系统设置列表")
+        setAccessibilityLabel("Drag \(name.stringValue) to System Settings list")
     }
     required init?(coder: NSCoder) { fatalError() }
     override func resetCursorRects() { addCursorRect(bounds, cursor: .openHand) }
@@ -87,7 +87,7 @@ enum SystemSettingsWindow {
 extension PermissionLook {
     /// Console status line: authorization only, red when missing, green when granted.
     static func summaryText(keyboardAuthorized: Bool, chatAuthorized: Bool) -> (keyboard: String, chat: String) {
-        ("键盘互动" + (keyboardAuthorized ? "已授权" : "未授权"), "快速聊天" + (chatAuthorized ? "已授权" : "未授权"))
+        ("Keyboard: " + (keyboardAuthorized ? "Authorized" : "Unauthorized"), "Quick Chat: " + (chatAuthorized ? "Authorized" : "Unauthorized"))
     }
     static func summary(keyboardAuthorized: Bool, chatAuthorized: Bool) -> NSAttributedString {
         let text = summaryText(keyboardAuthorized: keyboardAuthorized, chatAuthorized: chatAuthorized)
@@ -122,22 +122,22 @@ extension AppDelegate {
         let size = NSSize(width: 340, height: 262)
         let w = NSPanel(contentRect: NSRect(origin: .zero, size: size),
                         styleMask: [.titled, .closable, .utilityWindow, .nonactivatingPanel], backing: .buffered, defer: false)
-        w.title = "拖放授权 · \(pane.title)"
+        w.title = "Drag to Authorize · \(pane.title)"
         // The user works in System Settings meanwhile; keep the card visible.
         w.hidesOnDeactivate = false; w.isFloatingPanel = true; w.level = .floating
         w.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         w.isReleasedWhenClosed = false; w.delegate = self
         let root = w.contentView!
-        let head = label(root, "把下面的图标拖进「\(pane.title)」列表", 16, 226, 308)
+        let head = label(root, "Drag the icon below into the \"\(pane.title)\" list", 16, 226, 308)
         head.font = .systemFont(ofSize: 14, weight: .semibold)
         root.addSubview(DraggableAppView(frame: NSRect(x: 16, y: 166, width: 308, height: 52), bundleURL: Bundle.main.bundleURL))
-        let steps = label(root, "1. 按住上面的「\(appDisplayName)」，拖到旁边系统设置的列表里。\n2. 打开它右侧的开关。\n3. 列表里已有旧的「\(appDisplayName)」时，先点「清除旧记录」，再拖一次。", 16, 82, 308, 76)
+        let steps = label(root, "1. Drag \"\(appDisplayName)\" above into the System Settings list beside this window.\n2. Turn on the toggle switch on the right.\n3. If an older \"\(appDisplayName)\" is already listed, click \"Clear Old Records\" first, then drag again.", 16, 82, 308, 76)
         steps.lineBreakMode = .byWordWrapping; steps.font = .systemFont(ofSize: 12)
         guideStatus = label(root, "", 16, 46, 308, 32)
         guideStatus?.font = .systemFont(ofSize: 12, weight: .medium); guideStatus?.lineBreakMode = .byWordWrapping
-        action(root, "清除旧记录", #selector(resetGuideRecords), 10, 14, 112)
-        action(root, "重启应用", #selector(restartApplication), 124, 14, 100)
-        action(root, "完成", #selector(closeGuide), 236, 14, 94)
+        action(root, "Clear Old Records", #selector(resetGuideRecords), 10, 14, 112)
+        action(root, "Restart App", #selector(restartApplication), 124, 14, 100)
+        action(root, "Done", #selector(closeGuide), 236, 14, 94)
         guidePanel = w; guidePane = pane
         placeGuide(); refreshGuide()
         w.orderFrontRegardless()
@@ -158,11 +158,11 @@ extension AppDelegate {
     func refreshGuide() {
         guard let pane = guidePane, let status = guideStatus else { return }
         if paneSatisfied(pane) {
-            status.stringValue = "已授权 ✓"; status.textColor = .systemGreen
+            status.stringValue = "Authorized ✓"; status.textColor = .systemGreen
         } else if pane == .inputMonitoring && (input.listeningAllowed || input.accessibilityAllowed) {
-            status.stringValue = "系统显示已授权，但按键仍未连接：点「清除旧记录」后重新拖入，或点「重启应用」。"; status.textColor = .systemOrange
+            status.stringValue = "System shows authorized, but keys are not connected: click \"Clear Old Records\" and drag again, or click \"Restart App\"."; status.textColor = .systemOrange
         } else {
-            status.stringValue = "等待授权…"; status.textColor = .secondaryLabelColor
+            status.stringValue = "Awaiting authorization…"; status.textColor = .secondaryLabelColor
         }
     }
     /// Remove this bundle's entries for one service; tccutil needs no admin rights for that.
@@ -171,12 +171,12 @@ extension AppDelegate {
         let tool = Process(); tool.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
         tool.arguments = arguments
         tool.standardOutput = FileHandle.nullDevice; tool.standardError = FileHandle.nullDevice
-        do { try tool.run(); tool.waitUntilExit() } catch { guideStatus?.stringValue = "无法清除旧记录：\(error.localizedDescription)"; return }
-        guard tool.terminationStatus == 0 else { guideStatus?.stringValue = "清除失败，请在列表里手动删除旧条目。"; return }
+        do { try tool.run(); tool.waitUntilExit() } catch { guideStatus?.stringValue = "Cannot clear old records: \(error.localizedDescription)"; return }
+        guard tool.terminationStatus == 0 else { guideStatus?.stringValue = "Clear failed, please remove old entries in the list manually."; return }
         input.refresh(force: true); updatePermission()
         // Reopen so the list redraws without the removed entries.
         NSWorkspace.shared.open(pane.url)
-        guideStatus?.stringValue = "已清除旧记录，现在把图标拖进列表。"; guideStatus?.textColor = .labelColor
+        guideStatus?.stringValue = "Old records cleared, now drag the icon into the list."; guideStatus?.textColor = .labelColor
     }
     @objc func closeGuide() {
         guideTimer?.invalidate(); guideTimer = nil

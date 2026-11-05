@@ -168,7 +168,7 @@ enum AudioOutputProbe {
     }
 }
 
-/// PAT喵！ meows: the same two bundled WAVs as Windows. A new click cuts the
+/// PAT Meow! meows: the same two bundled WAVs as Windows. A new click cuts the
 /// previous sound and starts at once; clicks within 15 ms are dropped, like
 /// the Windows audio thread.
 final class PatSound {
@@ -201,7 +201,7 @@ final class MusicMonitor {
         generation += 1; self.enabled = enabled
         lastPlaying = nil; lastMessage = ""
         timer?.invalidate(); timer = nil
-        guard enabled else { players.stop(); onChange?(false, "音乐音符已关闭。"); return }
+        guard enabled else { players.stop(); onChange?(false, "Music notes disabled."); return }
         players.onChange = { [weak self] in self?.poll() }
         players.start()
         poll()
@@ -218,9 +218,9 @@ final class MusicMonitor {
             let state = autoreleasepool { AudioOutputProbe.snapshot(reported: reported) }
             let message: String
             switch state.playing {
-            case true?: message = "检测到音乐播放。"
-            case false?: message = "等待支持的音乐软件播放（网易云、QQ、酷狗、酷我、汽水、Apple Music、Spotify 等）。"
-            default: message = "暂时无法读取音频输出状态。"
+            case true?: message = "Music playback detected."
+            case false?: message = "Waiting for supported music app playback (Apple Music, Spotify, Netease, QQ Music, etc.)."
+            default: message = "Unable to read audio output status."
             }
             DispatchQueue.main.async {
                 guard let self else { return }; self.busy = false
@@ -259,7 +259,7 @@ extension AppDelegate {
         music.setEnabled(flag("musicNotes"))
     }
     func refreshMusicLabel() {
-        musicToggle?.toolTip = musicStatus + " 仅支持的音乐软件播放时显示音符，浏览器和视频播放器不会触发。"
+        musicToggle?.toolTip = musicStatus + " Note particles only appear when supported music players are active; browsers and video players do not trigger this."
     }
     func prepareGlyphs() {
         guard !glyphsReady else { return }
@@ -298,13 +298,13 @@ extension AppDelegate {
                 let newer = StableVersion.newer(tag, than: appVersion)
                 let assets = value["assets"] as? [[String: Any]] ?? []
                 let hasMac = assets.contains { (($0["name"] as? String ?? "").lowercased().contains("mac")) }
-                let a = NSAlert(); a.messageText = newer ? "发现新的正式版 \(tag)" : "当前没有更高的正式版本"
-                a.informativeText = "当前：v\(appVersion) · 仓库：\(tag)\n" + (hasMac ? "发布页含 macOS 资源，请核对版本后下载。" : "该发布页尚未发现 macOS 安装包，请勿将 Windows 程序用于 macOS。")
-                a.addButton(withTitle: "关闭"); a.addButton(withTitle: "打开发布页")
+                let a = NSAlert(); a.messageText = newer ? "New release found: \(tag)" : "You are using the latest release"
+                a.informativeText = "Current: v\(appVersion) · Repository: \(tag)\n" + (hasMac ? "macOS release assets are available. Verify version and download." : "macOS package not found on release page yet. Do not use Windows executable on macOS.")
+                a.addButton(withTitle: "Close"); a.addButton(withTitle: "Open Release Page")
                 if a.runModal() == .alertSecondButtonReturn {
                     NSWorkspace.shared.open(URL(string: "https://github.com/DLmember/Minecraft-Desktop-Pet/releases")!)
                 }
-            } catch { alert("Github又宕机了QAQ\n可能是网络异常或 API 限流，请稍后重试。") }
+            } catch { alert("Unable to reach GitHub Q_Q\nCould be network issues or API rate limits. Please try again later.") }
         }
     }
 }

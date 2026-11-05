@@ -139,7 +139,7 @@ pub unsafe fn insert(foreground: HWND) -> Result<(), &'static str> {
         return Ok(());
     }
     if foreground.is_null() || GetForegroundWindow() != foreground {
-        return Err("聊天前缀未输入：输入窗口已切换，请重新输入 #。");
+        return Err("Chat prefix not entered: target window lost focus, please type # again.");
     }
     let mut inputs = Vec::with_capacity(TEXT.len() * 2);
     for ch in TEXT.encode_utf16() {
@@ -164,7 +164,7 @@ pub unsafe fn insert(foreground: HWND) -> Result<(), &'static str> {
         std::mem::size_of::<INPUT>() as i32,
     ) != inputs.len() as u32
     {
-        return Err("聊天前缀输入失败：请检查目标窗口是否以管理员权限运行。");
+        return Err("Failed to input chat prefix: please check if target window is running as administrator.");
     }
     Ok(())
 }

@@ -77,7 +77,7 @@ impl App {
         self.panel = CreateWindowExW(
             WS_EX_ACCEPTFILES,
             class.as_ptr(),
-            wide(&format!("{} · 控制台", product_title())).as_ptr(),
+            wide(&format!("{} · Settings", product_title())).as_ptr(),
             WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
@@ -111,7 +111,7 @@ impl App {
         self.layout.clear();
         self.page_controls.clear();
         self.building_page = 3;
-        for (i, text) in ["常规", "视线与角度", "自定义姿态"].iter().enumerate() {
+        for (i, text) in ["General", "Look & Rotation", "Custom Pose"].iter().enumerate() {
             self.control(
                 "BUTTON",
                 text,
@@ -125,79 +125,79 @@ impl App {
         }
         self.building_page = 0;
         // General page: uniform 36px row pitch and aligned labels/inputs.
-        self.control("STATIC", "皮肤", 0, 24, 82, 110, 24, 0);
+        self.control("STATIC", "Skin", 0, 24, 82, 110, 24, 0);
         self.control("STATIC", "", SS_PATHELLIPSIS, 150, 82, 325, 24, 300);
-        self.control("BUTTON", "导入皮肤…", BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 76, 120, 30, 101);
-        self.control("BUTTON", "恢复内置", BS_PUSHBUTTON as u32 | WS_TABSTOP, 624, 76, 110, 30, 102);
-        self.control("STATIC", "正版 ID", 0, 24, 118, 110, 24, 331);
+        self.control("BUTTON", "Import Skin…", BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 76, 120, 30, 101);
+        self.control("BUTTON", "Reset Skin", BS_PUSHBUTTON as u32 | WS_TABSTOP, 624, 76, 110, 30, 102);
+        self.control("STATIC", "Original ID", 0, 24, 118, 110, 24, 331);
         let input = self.control("EDIT", &self.online_id.clone(), WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL as u32, 150, 112, 325, 30, 330);
         SendMessageW(input, EM_SETLIMITTEXT, 36, 0);
-        SendMessageW(input, 0x1501, 0, wide("Java 版用户名或 UUID").as_ptr() as isize);
-        self.control("BUTTON", "获取皮肤", BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 112, 120, 30, 104);
-        self.control("STATIC", "无需登录", 0, 624, 118, 110, 24, 332);
+        SendMessageW(input, 0x1501, 0, wide("Java Edition username or UUID").as_ptr() as isize);
+        self.control("BUTTON", "Fetch Skin", BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 112, 120, 30, 104);
+        self.control("STATIC", "No login needed", 0, 624, 118, 110, 24, 332);
         self.control("STATIC", &self.online_notice.clone(), 0, 150, 154, 584, 24, 333);
-        self.control("STATIC", "手臂", 0, 24, 178, 110, 24, 0);
-        self.radio("经典（4 px）", 150, 174, 155, 114);
-        self.radio("纤细（3 px）", 330, 174, 155, 115);
-        self.control("STATIC", "外观", 0, 24, 210, 110, 24, 0);
-        self.check("显示皮肤外层", 150, 206, 220, 124);
-        self.check("Q 版小人", 490, 206, 220, 139);
-        self.control("STATIC", "姿势", 0, 24, 242, 110, 24, 0);
-        self.radio("站立", 150, 238, 100, 110);
-        self.radio("坐下", 260, 238, 100, 111);
-        self.radio("自定义", 370, 238, 115, 116);
-        self.control("STATIC", "站立时按住 Shift 潜行", 0, 490, 242, 244, 24, 0);
-        self.control("STATIC", "敲字", 0, 24, 274, 110, 24, 0);
-        self.radio("精准按键", 150, 270, 155, 112);
-        self.radio("双手交替", 330, 270, 155, 113);
-        self.control("STATIC", "主手", 0, 24, 306, 110, 24, 0);
-        self.radio("右手挥动", 150, 302, 140, 118);
-        self.radio("左手挥动", 295, 302, 140, 119);
-        self.radio("实际映射", 440, 302, 140, 165);
-        self.radio("反向映射", 585, 302, 149, 166);
-        self.control("STATIC", "桌面", 0, 24, 338, 110, 24, 0);
-        self.check("保持置顶", 150, 334, 150, 120);
-        self.check("完全鼠标穿透", 330, 334, 220, 121);
-        self.control("STATIC", "键盘", 0, 24, 370, 110, 24, 0);
-        self.check("全局键盘互动", 150, 366, 170, 122);
-        self.check("hyp快速队伍聊天", 330, 366, 220, 137);
+        self.control("STATIC", "Arms", 0, 24, 178, 110, 24, 0);
+        self.radio("Classic (4 px)", 150, 174, 155, 114);
+        self.radio("Slim (3 px)", 330, 174, 155, 115);
+        self.control("STATIC", "Appearance", 0, 24, 210, 110, 24, 0);
+        self.check("Show outer layer", 150, 206, 220, 124);
+        self.check("Chibi character", 490, 206, 220, 139);
+        self.control("STATIC", "Pose", 0, 24, 242, 110, 24, 0);
+        self.radio("Standing", 150, 238, 100, 110);
+        self.radio("Sitting", 260, 238, 100, 111);
+        self.radio("Custom", 370, 238, 115, 116);
+        self.control("STATIC", "Hold Shift while standing to sneak", 0, 490, 242, 244, 24, 0);
+        self.control("STATIC", "Typing", 0, 24, 274, 110, 24, 0);
+        self.radio("Precise", 150, 270, 155, 112);
+        self.radio("Alternating", 330, 270, 155, 113);
+        self.control("STATIC", "Main Hand", 0, 24, 306, 110, 24, 0);
+        self.radio("Right hand", 150, 302, 140, 118);
+        self.radio("Left hand", 295, 302, 140, 119);
+        self.radio("Physical map", 440, 302, 140, 165);
+        self.radio("Inverted map", 585, 302, 149, 166);
+        self.control("STATIC", "Desktop", 0, 24, 338, 110, 24, 0);
+        self.check("Always on top", 150, 334, 150, 120);
+        self.check("Click-through", 330, 334, 220, 121);
+        self.control("STATIC", "Keyboard", 0, 24, 370, 110, 24, 0);
+        self.check("Keyboard interaction", 150, 366, 170, 122);
+        self.check("hyp quick team chat", 330, 366, 220, 137);
         self.control("STATIC", "# → /p chat", 0, 555, 370, 179, 24, 0);
-        self.control("STATIC", "动画", 0, 24, 402, 110, 24, 0);
-        self.check("DA眨眼（需修改过皮肤）", 150, 398, 260, 163);
-        self.check("DA扭腰", 414, 398, 92, 164);
-        self.check("敲字浮现字", 510, 398, 128, 167);
-        self.check("可调戏", 642, 398, 92, 172);
-        self.control("STATIC", "大小", 0, 24, 466, 110, 24, 0);
+        self.control("STATIC", "Animation", 0, 24, 402, 110, 24, 0);
+        self.check("DA blink (custom skin)", 150, 398, 260, 163);
+        self.check("DA dance", 414, 398, 92, 164);
+        self.check("Typing letters", 510, 398, 128, 167);
+        self.check("Interactable", 642, 398, 92, 172);
+        self.control("STATIC", "Scale", 0, 24, 466, 110, 24, 0);
         self.slider(200, 150, 462, 490, 65, 180);
         self.control("STATIC", "", SS_RIGHT, 650, 466, 84, 24, 310);
-        self.control("STATIC", "帧率", 0, 24, 498, 110, 24, 0);
+        self.control("STATIC", "Frame Rate", 0, 24, 498, 110, 24, 0);
         self.slider(207, 150, 494, 490, 0, 6);
         self.control("STATIC", "", SS_RIGHT, 650, 498, 84, 24, 607);
-        self.control("STATIC", "打字压低", 0, 24, 530, 120, 24, 0);
+        self.control("STATIC", "Typing Squash", 0, 24, 530, 120, 24, 0);
         self.slider(211, 150, 526, 490, 0, 30);
         self.control("STATIC", "", SS_RIGHT, 650, 530, 84, 24, 611);
-        self.control("STATIC", "Q版身体大小", 0, 24, 562, 125, 24, 0);
+        self.control("STATIC", "Chibi Body Scale", 0, 24, 562, 125, 24, 0);
         self.slider(212, 150, 558, 490, 50, 180);
         self.control("STATIC", "", SS_RIGHT, 650, 562, 84, 24, 612);
-        // PAT喵！与音效大小（2.5.2 的动画行已满，放在原本「其他」这一行）
-        self.control("STATIC", "音效大小", 0, 24, 594, 100, 24, 0);
-        self.check("PAT喵！", 150, 590, 110, 182);
+        // PAT Meow! and sound volume (animation row is full in 2.5.2, placed in "Other" row)
+        self.control("STATIC", "Sound Volume", 0, 24, 594, 100, 24, 0);
+        self.check("PAT Meow!", 150, 590, 110, 182);
         self.slider(213, 280, 590, 300, 0, 100);
         self.control("STATIC", "", SS_RIGHT, 600, 594, 84, 24, 613);
-        self.control("STATIC", "其他", 0, 24, 630, 110, 24, 0);
-        self.check("显示正版披风", 150, 626, 220, 138);
-        self.check("随 Windows 登录自动启动", 430, 626, 304, 160);
-        self.control("STATIC", "音乐", 0, 24, 662, 110, 24, 0);
-        self.check("播放音乐时冒音符", 150, 658, 260, 171);
-        self.check("呼吸动画", 150, 430, 124, 173);
-        self.check("偶尔伸懒腰", 282, 430, 146, 175);
-        self.check("偶尔歪头", 436, 430, 138, 176);
-        self.check("偶尔犯困", 582, 430, 152, 177);
+        self.control("STATIC", "Other", 0, 24, 630, 110, 24, 0);
+        self.check("Show Cape", 150, 626, 220, 138);
+        self.check("Start with Windows", 430, 626, 304, 160);
+        self.control("STATIC", "Music", 0, 24, 662, 110, 24, 0);
+        self.check("Music note particles", 150, 658, 260, 171);
+        self.check("Breathing", 150, 430, 124, 173);
+        self.check("Stretch", 282, 430, 146, 175);
+        self.check("Tilt head", 436, 430, 138, 176);
+        self.check("Sleepy", 582, 430, 152, 177);
         self.building_page = 1;
-        self.control("STATIC", "整体角度偏移", 0, 24, 78, 280, 24, 0);
+        self.control("STATIC", "Model Orientation & Rotation", 0, 24, 78, 280, 24, 0);
         self.control(
             "BUTTON",
-            "角度归零",
+            "Reset Rotation",
             BS_PUSHBUTTON as u32 | WS_TABSTOP,
             624,
             72,
@@ -205,7 +205,7 @@ impl App {
             30,
             133,
         );
-        for (i, label) in ["前后俯仰 · X", "左右转向 · Y", "左右倾斜 · Z"]
+        for (i, label) in ["Pitch · X", "Yaw · Y", "Roll · Z"]
             .iter()
             .enumerate()
         {
@@ -214,10 +214,10 @@ impl App {
             self.slider(208 + i as i32, 180, y - 3, 445, -180, 180);
             self.control("STATIC", "", SS_RIGHT, 636, y, 98, 24, 608 + i as i32);
         }
-        self.check("视线跟随鼠标", 24, 268, 240, 123);
+        self.check("Track mouse cursor", 24, 268, 240, 123);
         self.control(
             "BUTTON",
-            "跟随复位",
+            "Reset Tracking",
             BS_PUSHBUTTON as u32 | WS_TABSTOP,
             624,
             264,
@@ -225,10 +225,10 @@ impl App {
             30,
             132,
         );
-        self.control("STATIC", "水平 · 左右", 0, 24, 314, 240, 24, 0);
-        self.control("STATIC", "垂直 · 上下", 0, 400, 314, 240, 24, 0);
+        self.control("STATIC", "Horizontal (X)", 0, 24, 314, 240, 24, 0);
+        self.control("STATIC", "Vertical (Y)", 0, 400, 314, 240, 24, 0);
         for (col, base) in [(24, 201), (400, 204)] {
-            for (row, label) in ["灵敏度", "转动范围", "中心偏移"].iter().enumerate() {
+            for (row, label) in ["Sensitivity", "Range", "Center Offset"].iter().enumerate() {
                 let y = 356 + row as i32 * 62;
                 let id = base + row as i32;
                 self.control("STATIC", label, 0, col, y, 160, 22, 0);
@@ -241,16 +241,16 @@ impl App {
                 self.slider(id, col, y + 23, 330, min, max);
             }
         }
-        self.control("STATIC", "负值偏左，正值偏右", 0, 24, 550, 335, 24, 0);
-        self.control("STATIC", "负值抬头，正值低头", 0, 400, 550, 335, 24, 0);
+        self.control("STATIC", "Negative leans left, positive leans right", 0, 24, 550, 335, 24, 0);
+        self.control("STATIC", "Negative looks up, positive looks down", 0, 400, 550, 335, 24, 0);
 
         self.building_page = 2;
-        self.radio("使用自定义姿态", 24, 74, 230, 117);
-        self.radio("站姿", 300, 74, 110, 135);
-        self.radio("坐姿", 425, 74, 110, 136);
+        self.radio("Use custom pose", 24, 74, 230, 117);
+        self.radio("Standing", 300, 74, 110, 135);
+        self.radio("Sitting", 425, 74, 110, 136);
         self.control(
             "BUTTON",
-            "姿态归零",
+            "Reset Pose",
             BS_PUSHBUTTON as u32 | WS_TABSTOP,
             624,
             72,
@@ -260,7 +260,7 @@ impl App {
         );
         self.control(
             "STATIC",
-            "站姿和坐姿分别保存；坐姿角度在默认坐姿上调整。",
+            "Standing and sitting poses are saved separately; sitting angles adjust upon default sit pose.",
             0,
             24,
             116,
@@ -268,13 +268,13 @@ impl App {
             24,
             0,
         );
-        for (axis, label) in ["前后旋转 · X", "左右旋转 · Y", "侧向旋转 · Z"]
+        for (axis, label) in ["Pitch · X", "Yaw · Y", "Roll · Z"]
             .iter()
             .enumerate()
         {
             self.control("STATIC", label, 0, 120 + axis as i32 * 205, 164, 200, 24, 0);
         }
-        for (row, name) in ["头部", "身体", "左臂", "右臂", "左腿", "右腿"]
+        for (row, name) in ["Head", "Body", "Left Arm", "Right Arm", "Left Leg", "Right Leg"]
             .iter()
             .enumerate()
         {
@@ -289,7 +289,7 @@ impl App {
         }
         self.control(
             "STATIC",
-            "坐姿支持敲字、长按和挥手；互动结束回到所设姿态。",
+            "Sitting pose supports typing, holding, and waving; returns to set pose afterwards.",
             0,
             24,
             554,
@@ -299,7 +299,7 @@ impl App {
         );
         self.control(
             "STATIC",
-            "头部角度在关闭视线跟随后生效；不弯曲肢体。",
+            "Head angles apply when mouse tracking is off; limbs do not bend.",
             0,
             24,
             580,
@@ -308,21 +308,21 @@ impl App {
             0,
         );
 
-        self.control("STATIC", "键盘样式", 0, 24, 630, 110, 24, 0);
-        self.radio("简洁", 150, 626, 110, 184);
-        self.radio("细节", 280, 626, 110, 185);
-        self.control("STATIC", "键盘色号", 0, 410, 630, 80, 24, 0);
+        self.control("STATIC", "Keyboard Style", 0, 24, 630, 110, 24, 0);
+        self.radio("Simple", 150, 626, 110, 184);
+        self.radio("Detailed", 280, 626, 110, 185);
+        self.control("STATIC", "Keyboard Color", 0, 410, 630, 100, 24, 0);
         let color = self.control("EDIT", &self.settings.keyboard_color.clone(), WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL as u32, 510, 626, 116, 28, 334);
         SendMessageW(color, EM_SETLIMITTEXT, 7, 0);
         self.control("BUTTON", "✓", BS_PUSHBUTTON as u32 | WS_TABSTOP, 634, 626, 36, 28, 174);
         self.building_page = 3;
-        self.control("BUTTON", "检查更新", BS_PUSHBUTTON as u32 | WS_TABSTOP, 24, 726, 120, 30, 170);
+        self.control("BUTTON", "Check Updates", BS_PUSHBUTTON as u32 | WS_TABSTOP, 24, 726, 120, 30, 170);
         self.control("BUTTON", "GitHub", BS_PUSHBUTTON as u32 | WS_TABSTOP, 614, 726, 120, 30, 169);
-        self.check("锁定双击（双击桌宠不打开设置面板）", 170, 726, 430, 183);
-        self.status = self.control("STATIC", "已保存", 0, 24, 774, 465, 24, 320);
+        self.check("Lock double-click (double-click won't open settings)", 170, 726, 430, 183);
+        self.status = self.control("STATIC", "Saved", 0, 24, 774, 465, 24, 320);
         self.control(
             "STATIC",
-            "由GPT 6 Astra制作",
+            "Created by GPT 6 Astra",
             SS_RIGHT,
             490,
             774,
@@ -332,7 +332,7 @@ impl App {
         );
         self.control(
             "STATIC",
-            "拖动摆放 · 右键菜单 · 双击设置；关闭此窗口不会退出桌宠。",
+            "Drag to move · Right-click for menu · Double-click for settings; closing this window will not exit the pet.",
             0,
             24,
             800,
@@ -546,9 +546,9 @@ impl App {
         SetWindowTextW(
             self.ctrl(104),
             wide(if self.download.is_some() {
-                "获取中…"
+                "Fetching…"
             } else {
-                "获取皮肤"
+                "Fetch Skin"
             })
             .as_ptr(),
         );
@@ -699,7 +699,7 @@ impl App {
         );
         if tracking {
             if !self.slider_pending {
-                SetWindowTextW(self.status, wide("调整中，松手保存").as_ptr());
+                SetWindowTextW(self.status, wide("Adjusting, release to save").as_ptr());
             }
             self.slider_pending = true;
         } else {
@@ -722,7 +722,7 @@ impl App {
             return;
         }
         self.online_id = id.clone();
-        self.online_notice = "正在连接官方皮肤服务…".into();
+        self.online_notice = "Connecting to official skin service…".into();
         let (tx, rx) = std::sync::mpsc::channel();
         self.download = Some(rx);
         match std::thread::Builder::new()
@@ -733,7 +733,7 @@ impl App {
             Ok(_) => {}
             Err(e) => {
                 self.download = None;
-                self.online_notice = format!("无法开始下载：{e}");
+                self.online_notice = format!("Cannot start download: {e}");
             }
         }
         self.refresh_panel();
@@ -742,7 +742,7 @@ impl App {
         let result = match self.download.as_ref().map(|rx| rx.try_recv()) {
             Some(Ok(result)) => result,
             Some(Err(std::sync::mpsc::TryRecvError::Disconnected)) => {
-                Err("下载已中断，请重试。".into())
+                Err("Download interrupted, please try again.".into())
             }
             _ => return,
         };
@@ -751,13 +751,13 @@ impl App {
             Ok(result) => {
                 let dest = self.store.dir.join("skin.png");
                 if let Err(e) = config::atomic(&dest, &result.bytes) {
-                    self.online_notice = format!("皮肤保存失败：{e}");
+                    self.online_notice = format!("Failed to save skin: {e}");
                     self.refresh_panel();
                     return;
                 }
                 self.skin = result.skin;
                 self.settings.skin_path = dest.to_string_lossy().into_owned();
-                // 正版披风：拿到就存成 cape.png，没有就清掉旧披风。
+                // Official cape: save to cape.png if present, clear old cape if none.
                 let mut cape_notice = String::new();
                 match result.cape {
                     Some(bytes) => {
@@ -766,17 +766,17 @@ impl App {
                             if config::atomic(&cape_dest, &bytes).is_ok() {
                                 self.settings.cape_path = cape_dest.to_string_lossy().into_owned();
                                 self.cape = Some(cape);
-                                cape_notice = "，含披风".into();
+                                cape_notice = ", with cape".into();
                             }
                         }
                     }
                     None => {
                         self.settings.cape_path.clear();
                         self.cape = None;
-                        cape_notice = "，该账号没有披风".into();
+                        cape_notice = ", this account has no cape".into();
                     }
                 }
-                self.settings.skin_name = format!("{} · 正版皮肤", result.name);
+                self.settings.skin_name = format!("{} · Official Skin", result.name);
                 self.settings.arm_model = if result.slim && !self.skin.legacy {
                     "slim"
                 } else {
@@ -785,7 +785,7 @@ impl App {
                 .into();
                 self.changed();
                 self.online_notice =
-                    format!("已获取 {} 的皮肤{cape_notice}，已自动识别手臂类型。", result.name);
+                    format!("Retrieved {}'s skin{}, arm model identified automatically.", result.name);
             }
             Err(e) => self.online_notice = e,
         }
@@ -793,7 +793,7 @@ impl App {
     }
     pub(super) unsafe fn choose_skin(&mut self) {
         let mut buffer = [0u16; 32768];
-        let filter = wide("Minecraft PNG 皮肤\0*.png\0\0");
+        let filter = wide("Minecraft PNG Skin (*.png)\0*.png\0\0");
         let mut data: OPENFILENAMEW = std::mem::zeroed();
         data.lStructSize = std::mem::size_of::<OPENFILENAMEW>() as u32;
         data.hwndOwner = if self.panel.is_null() {
@@ -804,7 +804,7 @@ impl App {
         data.lpstrFilter = filter.as_ptr();
         data.lpstrFile = buffer.as_mut_ptr();
         data.nMaxFile = buffer.len() as u32;
-        let title = wide("选择 Minecraft 皮肤");
+        let title = wide("Select Minecraft Skin");
         data.lpstrTitle = title.as_ptr();
         data.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
         if GetOpenFileNameW(&mut data) != 0 {
@@ -866,7 +866,7 @@ pub(super) unsafe fn panel_proc(
         WM_CLOSE => {
             a.save();
             DestroyWindow(hwnd);
-            // 关闭控制台后如果托盘图标此前没加上，再重试一轮。
+            // After closing console, retry tray icon if it was not added earlier.
             if !a.tray_ok {
                 a.tray_retry = 0;
                 a.tray_retry_at = 0.;

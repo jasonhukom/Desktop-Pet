@@ -1,2 +1,3 @@
-咱的初衷就是做一个让用户用着舒服省心的桌宠qwq让用户不需要担心体积和内存占用。所以我希望，桌宠的体积始终不要超过 **5MB**，内存占用不超过 **30MB** （指Windows，我不知道macOS的内存机制）。就用纯rust。
-桌宠就应该是这样极致轻量化，如果臃肿，那便失去了它的初衷
+Our original vision has always been to create a desktop pet that is comfortable, lightweight, and hassle-free to use, without worrying about disk space or RAM usage. That is why I want the pet's executable size to stay under **5MB** and memory consumption under **30MB** (on Windows; I'm not sure of macOS memory semantics). Built in pure Rust.
+
+A desktop pet should remain this extremely lightweight. If it becomes bloated, it defeats its core purpose.
