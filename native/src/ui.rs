@@ -785,7 +785,7 @@ impl App {
                 .into();
                 self.changed();
                 self.online_notice =
-                    format!("Retrieved {}'s skin{}, arm model identified automatically.", result.name);
+                    format!("Retrieved {}'s skin{cape_notice}, arm model identified automatically.", result.name);
             }
             Err(e) => self.online_notice = e,
         }
