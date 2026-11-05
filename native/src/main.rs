@@ -238,6 +238,10 @@ pub struct App {
     width: i32,
     height: i32,
     drag: Option<POINT>,
+    drag_samples: Vec<(f32, POINT)>,
+    flight_pos: Vec2,
+    flight_vel: Vec2,
+    in_flight: bool,
     hidden: bool,
     start: Instant,
     last: f32,
@@ -320,6 +324,10 @@ impl App {
             width: 360,
             height: 420,
             drag: None,
+            drag_samples: Vec::new(),
+            flight_pos: Vec2::ZERO,
+            flight_vel: Vec2::ZERO,
+            in_flight: false,
             hidden: false,
             start: Instant::now(),
             last: 0.,
@@ -427,7 +435,7 @@ impl App {
             };
         }
     }
-    unsafe fn constrain(&mut self) {
+    unsafe fn work_bounds(&self) -> (i32, i32, i32, i32) {
         let center = POINT {
             x: self.pos.x + self.width / 2,
             y: self.pos.y + self.height / 2,
@@ -443,14 +451,96 @@ impl App {
         let top = (b[1] as f32 * sy) as i32 - 3;
         let right = (b[2] as f32 * sx) as i32 + 3;
         let bottom = (b[3] as f32 * sy) as i32 + 3;
-        self.pos.x = self.pos.x.clamp(
-            info.rcWork.left - left,
-            (info.rcWork.right - right).max(info.rcWork.left - left),
-        );
-        self.pos.y = self.pos.y.clamp(
-            info.rcWork.top - top,
-            (info.rcWork.bottom - bottom).max(info.rcWork.top - top),
-        );
+        let min_x = info.rcWork.left - left;
+        let max_x = (info.rcWork.right - right).max(min_x);
+        let min_y = info.rcWork.top - top;
+        let max_y = (info.rcWork.bottom - bottom).max(min_y);
+        (min_x, max_x, min_y, max_y)
+    }
+    unsafe fn constrain(&mut self) {
+        let (min_x, max_x, min_y, max_y) = self.work_bounds();
+        self.pos.x = self.pos.x.clamp(min_x, max_x);
+        self.pos.y = self.pos.y.clamp(min_y, max_y);
+    }
+    fn record_drag_sample(&mut self, now: f32) {
+        self.drag_samples.push((now, self.pos));
+        self.drag_samples.retain(|(t, _)| now - *t <= 0.14);
+    }
+    fn drag_velocity(&self, now: f32) -> Vec2 {
+        let Some(&(last_t, last_p)) = self.drag_samples.last() else {
+            return Vec2::ZERO;
+        };
+        if now - last_t > 0.09 {
+            return Vec2::ZERO;
+        }
+        let anchor = self
+            .drag_samples
+            .iter()
+            .find(|&&(t, _)| now - t <= 0.11)
+            .copied()
+            .unwrap_or((last_t, last_p));
+        let dt = last_t - anchor.0;
+        if dt < 0.004 {
+            return Vec2::ZERO;
+        }
+        Vec2::new(
+            (last_p.x - anchor.1.x) as f32 / dt,
+            (last_p.y - anchor.1.y) as f32 / dt,
+        )
+    }
+    unsafe fn step_flight(&mut self, now: f32, dt: f32) {
+        if !self.in_flight {
+            return;
+        }
+        self.flight_pos += self.flight_vel * dt;
+        let (min_x, max_x, min_y, max_y) = self.work_bounds();
+        let mut hit_normal = Vec2::ZERO;
+        let mut hit_speed: f32 = 0.;
+        if self.flight_pos.x < min_x as f32 {
+            self.flight_pos.x = min_x as f32;
+            hit_speed = hit_speed.max(self.flight_vel.x.abs());
+            self.flight_vel.x = self.flight_vel.x.abs() * 0.78;
+            hit_normal.x = 1.;
+        } else if self.flight_pos.x > max_x as f32 {
+            self.flight_pos.x = max_x as f32;
+            hit_speed = hit_speed.max(self.flight_vel.x.abs());
+            self.flight_vel.x = -self.flight_vel.x.abs() * 0.78;
+            hit_normal.x = -1.;
+        }
+        if self.flight_pos.y < min_y as f32 {
+            self.flight_pos.y = min_y as f32;
+            hit_speed = hit_speed.max(self.flight_vel.y.abs());
+            self.flight_vel.y = self.flight_vel.y.abs() * 0.78;
+            hit_normal.y = 1.;
+        } else if self.flight_pos.y > max_y as f32 {
+            self.flight_pos.y = max_y as f32;
+            hit_speed = hit_speed.max(self.flight_vel.y.abs());
+            self.flight_vel.y = -self.flight_vel.y.abs() * 0.78;
+            hit_normal.y = -1.;
+        }
+        let d = self.dpi.max(0.5);
+        if hit_normal.length_squared() > 0.01 {
+            self.pose.on_wall_impact(hit_normal, hit_speed / d, now);
+        }
+        let damp = 0.935f32.powf((dt * 60.).clamp(0.2, 4.));
+        self.flight_vel *= damp;
+        self.pos = POINT {
+            x: self.flight_pos.x.round() as i32,
+            y: self.flight_pos.y.round() as i32,
+        };
+        self.move_to();
+        self.pose
+            .set_flight_motion(self.flight_vel.x / d, self.flight_vel.y / d);
+        self.awake = self.awake.max(now + 0.85);
+        if self.flight_vel.length() < 28. * d {
+            self.in_flight = false;
+            self.flight_vel = Vec2::ZERO;
+            self.pose.end_drag(now);
+            self.pose.on_land(140., now);
+            self.constrain();
+            self.move_to();
+            self.save_position();
+        }
     }
     unsafe fn move_to(&mut self) {
         SetWindowPos(
@@ -641,6 +731,7 @@ impl App {
             }
         }
         self.mouse_buttons = buttons;
+        let prev_cursor = self.cursor;
         let moved = cursor.x != self.cursor.x || cursor.y != self.cursor.y;
         self.cursor = cursor;
         // 「可调戏」长按：0.5 秒内允许小幅移动，进入手部揉捏循环后也允许移动
@@ -673,6 +764,7 @@ impl App {
             // 等待/正在进行摸头时，鼠标指针在模型内小幅移动只让头部跟随，
             // 不移动窗口；超过 tracker 的拖动阈值后摸头结束，才恢复正常的鼠标拖动。
             if self.hold.press.is_some() || self.hold.active {
+                self.pose.end_drag(now);
                 self.awake = self.awake.max(now + 0.05);
             } else {
                 self.pos = POINT {
@@ -680,7 +772,23 @@ impl App {
                     y: cursor.y - offset.y,
                 };
                 self.move_to();
+                self.record_drag_sample(now);
+                let vel = self.drag_velocity(now);
+                let d = self.dpi.max(0.5);
+                self.pose.set_drag_motion(vel.x / d, vel.y / d, now);
                 self.awake = now + 0.85;
+            }
+        } else if self.in_flight {
+            let step_dt = (now - self.last).clamp(0.001, 0.05);
+            self.step_flight(now, step_dt);
+        } else if moved && !buttons[0] && prev_cursor.x != i32::MIN && self.pet_hit(cursor) {
+            let d = self.dpi.max(0.5);
+            if self.pose.on_rub_move(
+                (cursor.x - prev_cursor.x) as f32 / d,
+                (cursor.y - prev_cursor.y) as f32 / d,
+                now,
+            ) {
+                self.wake();
             }
         }
         for vk in self
@@ -1050,6 +1158,19 @@ impl App {
                 let kind=[render::Gesture::Wave,render::Gesture::Bounce,render::Gesture::Shy,render::Gesture::Clap][(id-178) as usize];
                 self.pose.trigger_gesture(kind,self.start.elapsed().as_secs_f32()); self.wake();
             }
+            186 => {
+                let now = self.start.elapsed().as_secs_f32();
+                self.pose.trigger_gesture(render::Gesture::Bounce, now);
+                self.pose.trigger_bounce(now, -0.16, 2.8);
+                self.pose.spawn_heart(now);
+                self.wake();
+            }
+            187 => {
+                let now = self.start.elapsed().as_secs_f32();
+                self.pose.trigger_dizzy(now);
+                self.pose.trigger_bounce(now, -0.12, 1.8);
+                self.wake();
+            }
             150..=152 => self.show_page((id - 150) as u8),
             140..=143 => {
                 self.settings.scale = [0.75, 1., 1.25, 1.5][(id - 140) as usize];
@@ -1085,7 +1206,12 @@ impl App {
         }
         self.menu_open = true;
         self.drag = None;
-        self.release_hold(self.start.elapsed().as_secs_f32());
+        self.in_flight = false;
+        self.flight_vel = Vec2::ZERO;
+        self.drag_samples.clear();
+        let now = self.start.elapsed().as_secs_f32();
+        self.pose.end_drag(now);
+        self.release_hold(now);
         let menu = CreatePopupMenu();
         // DestroyMenu(menu) also releases all attached submenus.
         let append = |target: HMENU, id: u32, label: &str, checked: bool| {
@@ -1102,6 +1228,7 @@ impl App {
         submenu("Gestures", &[
             (178,"Wave",false),(179,"Jump",false),
             (180,"Shy",false),(181,"Clap",false),(168,"Feed Apple",false),
+            (186,"Boing! (Jelly Bounce)",false),(187,"Dizzy Spin",false),
         ]);
         append(menu, 0, "", false);
         let posture = match self.settings.posture.as_str() {
@@ -1283,6 +1410,9 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
             0
         }
         WM_LBUTTONDOWN => {
+            let now = a.start.elapsed().as_secs_f32();
+            a.in_flight = false;
+            a.flight_vel = Vec2::ZERO;
             a.native_mouse_press(0);
             let mut p = POINT { x: 0, y: 0 };
             GetCursorPos(&mut p);
@@ -1290,22 +1420,42 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
                 x: p.x - a.pos.x,
                 y: p.y - a.pos.y,
             });
+            a.drag_samples.clear();
+            a.record_drag_sample(now);
+            a.pose.on_pickup(now);
+            a.wake();
             SetCapture(hwnd);
             0
         }
         WM_LBUTTONUP => {
-            a.release_hold(a.start.elapsed().as_secs_f32());
+            let now = a.start.elapsed().as_secs_f32();
+            a.release_hold(now);
             if a.drag.take().is_some() {
                 ReleaseCapture();
-                a.constrain();
-                a.move_to();
-                a.save_position();
-                a.wake();
+                let vel = a.drag_velocity(now);
+                a.drag_samples.clear();
+                a.pose.end_drag(now);
+                let d = a.dpi.max(0.5);
+                if vel.length() > 220. * d {
+                    a.in_flight = true;
+                    a.flight_pos = Vec2::new(a.pos.x as f32, a.pos.y as f32);
+                    a.flight_vel = vel.clamp_length_max(3200. * d);
+                    a.wake();
+                } else {
+                    a.constrain();
+                    a.move_to();
+                    a.pose.on_land(vel.length() / d, now);
+                    a.save_position();
+                    a.wake();
+                }
             }
             0
         }
         WM_CAPTURECHANGED => {
-            a.release_hold(a.start.elapsed().as_secs_f32());
+            let now = a.start.elapsed().as_secs_f32();
+            a.release_hold(now);
+            a.drag_samples.clear();
+            a.pose.end_drag(now);
             if a.drag.take().is_some() {
                 a.constrain();
                 a.move_to();
@@ -1314,17 +1464,40 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
             0
         }
         WM_LBUTTONDBLCLK => {
+            let now = a.start.elapsed().as_secs_f32();
+            a.in_flight = false;
+            a.flight_vel = Vec2::ZERO;
+            a.drag_samples.clear();
+            a.pose.end_drag(now);
             if a.settings.lock_double_click {
                 a.native_mouse_press(0);
                 let mut p = POINT { x: 0, y: 0 };
                 GetCursorPos(&mut p);
                 a.drag = Some(POINT { x: p.x - a.pos.x, y: p.y - a.pos.y });
+                a.record_drag_sample(now);
+                a.pose.on_pickup(now);
+                a.wake();
                 SetCapture(hwnd);
             } else {
-                a.release_hold(a.start.elapsed().as_secs_f32());
+                a.release_hold(now);
                 a.drag = None;
                 ReleaseCapture();
                 a.show_panel();
+            }
+            0
+        }
+        WM_MOUSEWHEEL => {
+            let raw_delta = ((w >> 16) as u16 as i16) as f32 / 120.;
+            if raw_delta.abs() > 0.01 {
+                let next = (a.settings.scale + raw_delta * 0.06).clamp(0.5, 2.0);
+                if (next - a.settings.scale).abs() > 0.001 {
+                    a.settings.scale = (next * 100.).round() / 100.;
+                    let now = a.start.elapsed().as_secs_f32();
+                    a.pose.on_scale_step(raw_delta, now);
+                    a.resize_pet();
+                    a.changed();
+                    a.wake();
+                }
             }
             0
         }

@@ -12,6 +12,19 @@ pub(super) struct Letter {
     pub hand_origin: Option<Vec3>, pub start: f32, pub color:[u8;3],
 }
 pub(super) struct Note { pub start:f32, pub phase:f32 }
+pub(super) struct Heart {
+    pub start: f32,
+    pub offset_x: f32,
+    pub phase: f32,
+    pub scale: f32,
+    pub color: [u8; 3],
+}
+pub(super) const HEART_COLORS: [[u8; 3]; 4] = [
+    [255, 77, 141],
+    [255, 111, 165],
+    [255, 92, 119],
+    [255, 133, 179],
+];
 pub(super) fn key_label(vk:u32)->Option<String> {
     // The macOS input layer maps Mac key codes onto these virtual keys; label them
     // as printed on a Mac keyboard. The glyph atlas is ASCII only, so no ⌘/⌥ symbols.
@@ -323,6 +336,109 @@ impl Frame {
                 let mut screen=project(world,self.width as f32,self.height as f32);
                 screen.y-=rise*t*self.width as f32/44.;
                 self.label(&letter.label,screen,1.-t*t,letter.color);
+            }
+        }
+        if !pose.hearts.is_empty() {
+            let parts = parts_with_cape(s, skin, pose, None);
+            let head = &parts[if s.chibi { 0 } else { 1 }];
+            let top = head.transform.transform_point3(Vec3::new(0., head.size.y / 2. + 0.6, 0.));
+            let origin = project(top, self.width as f32, self.height as f32);
+            let scale = self.width as f32 / 44.;
+            // 7x6 pixel heart bitmap with highlight and shadow.
+            let rows = [
+                0b0110110u8,
+                0b1111111,
+                0b1111111,
+                0b0111110,
+                0b0011100,
+                0b0001000,
+            ];
+            for heart in &pose.hearts {
+                let t = ((pose.clock - heart.start) / 0.95).clamp(0., 1.);
+                let pop = if t < 0.16 {
+                    smooth(t / 0.16) * 1.15
+                } else if t < 0.32 {
+                    1.15 - 0.15 * smooth((t - 0.16) / 0.16)
+                } else {
+                    1.0 - 0.15 * ((t - 0.32) / 0.68)
+                };
+                let alpha = if t < 0.12 {
+                    smooth(t / 0.12)
+                } else {
+                    1. - ((t - 0.12) / 0.88).powi(2)
+                };
+                let unit = ((scale * 0.52 * heart.scale * pop).max(1.2)).round().max(1.);
+                let sway = (t * 5.6 + heart.phase).sin() * 1.35 * scale;
+                let cx = origin.x + heart.offset_x * scale + sway;
+                let cy = origin.y - (1.8 + t * 6.4) * scale;
+                for shadow in [true, false] {
+                    let off = if shadow { (unit * 0.55).max(1.) } else { 0. };
+                    for (y, row) in rows.iter().enumerate() {
+                        for x in 0..7 {
+                            if row & (1 << (6 - x)) == 0 {
+                                continue;
+                            }
+                            let left = (cx - 3.5 * unit + x as f32 * unit + off).round() as i32;
+                            let top_px = (cy - 3.0 * unit + y as f32 * unit + off).round() as i32;
+                            let color = if shadow {
+                                [92, 32, 58]
+                            } else if x == 1 && y == 1 {
+                                [255, 232, 242]
+                            } else {
+                                heart.color
+                            };
+                            let a = if shadow { alpha * 0.55 } else { alpha };
+                            for yy in 0..unit as i32 {
+                                for xx in 0..unit as i32 {
+                                    self.overlay(left + xx, top_px + yy, color, a);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        let dizzy = pose.dizzy_strength(pose.clock);
+        if dizzy > 0.01 {
+            let parts = parts_with_cape(s, skin, pose, None);
+            let head = &parts[if s.chibi { 0 } else { 1 }];
+            let top = head.transform.transform_point3(Vec3::new(0., head.size.y / 2. + 1.2, 0.));
+            let origin = project(top, self.width as f32, self.height as f32);
+            let scale = self.width as f32 / 44.;
+            let star_rows = [0b00100u8, 0b01110, 0b11111, 0b01110, 0b00100];
+            for i in 0..3 {
+                let angle = pose.clock * 5.4 + i as f32 * (std::f32::consts::TAU / 3.);
+                let rx = 4.1 * scale;
+                let ry = 1.25 * scale;
+                let sx = origin.x + angle.cos() * rx;
+                let sy = origin.y - 1.5 * scale + angle.sin() * ry + (pose.clock * 8.5 + i as f32).sin() * 0.3 * scale;
+                let depth_mod = 0.82 + 0.28 * (angle.sin() * 0.5 + 0.5);
+                let unit = (scale * 0.48 * depth_mod).max(1.2).round().max(1.);
+                for shadow in [true, false] {
+                    let off = if shadow { (unit * 0.5).max(1.) } else { 0. };
+                    for (y, row) in star_rows.iter().enumerate() {
+                        for x in 0..5 {
+                            if row & (1 << (4 - x)) == 0 {
+                                continue;
+                            }
+                            let left = (sx - 2.5 * unit + x as f32 * unit + off).round() as i32;
+                            let top_px = (sy - 2.5 * unit + y as f32 * unit + off).round() as i32;
+                            let color = if shadow {
+                                [128, 82, 18]
+                            } else if x == 2 && y == 2 {
+                                [255, 250, 205]
+                            } else {
+                                [255, 214, 64]
+                            };
+                            let a = if shadow { dizzy * 0.55 } else { dizzy };
+                            for yy in 0..unit as i32 {
+                                for xx in 0..unit as i32 {
+                                    self.overlay(left + xx, top_px + yy, color, a);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
