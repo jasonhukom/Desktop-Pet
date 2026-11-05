@@ -14,7 +14,14 @@ extension AppDelegate {
         menu.removeAllItems()
         add(menu, "Open Settings…", #selector(showSettings), key: ",")
         if startupPending {
-            add(menu, "Exit Minecraft Desktop Pet", #selector(quit), key: "q")
+            let langMenu = submenu(menu, "🌐 Language")
+        let curLang = settings["language"] as? String ?? "en"
+        for (code, name, eng) in LanguageList.all.prefix(20) {
+            let item = add(langMenu, "\(name) (\(eng))", #selector(selectLanguageItem(_:)), state: curLang == code)
+            item.representedObject = code
+        }
+        menu.addItem(.separator())
+        add(menu, "Exit Minecraft Desktop Pet", #selector(quit), key: "q")
             return
         }
         let actions = submenu(menu, "Gestures")

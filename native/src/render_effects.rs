@@ -13,10 +13,16 @@ pub(super) struct Letter {
 }
 pub(super) struct Note { pub start:f32, pub phase:f32 }
 pub(super) fn key_label(vk:u32)->Option<String> {
+    key_label_with_layout(vk, "en")
+}
+pub(super) fn key_label_with_layout(vk:u32, lang: &str)->Option<String> {
     // The macOS input layer maps Mac key codes onto these virtual keys; label them
     // as printed on a Mac keyboard. The glyph atlas is ASCII only, so no ⌘/⌥ symbols.
     #[cfg(target_os = "macos")]
     if let Some(label)=mac_key_label(vk) { return Some(label.into()); }
+    if let Some(ch) = crate::i18n::keyboard_alphabet_char(vk, lang) {
+        return Some(ch);
+    }
     if matches!(vk,48..=57 | 65..=90) { return Some((vk as u8 as char).to_string()); }
     if (96..=105).contains(&vk) { return Some((vk-96).to_string()); }
     if (112..=135).contains(&vk) { return Some(format!("F{}",vk-111)); }
@@ -351,21 +357,21 @@ impl Frame {
     }
     fn label(&mut self,text:&str,pos:Vec3,alpha:f32,color:[u8;3]) {
         let scale=(self.width as f32/360.).clamp(0.65,3.);
-        let widths:Vec<f32>=text.bytes().map(|ch| {
-            let glyph=&glyphs()[(ch.saturating_sub(32)).min(94) as usize];
-            let left=(0..24).find(|&x|(0..24).any(|y|glyph[y*24+x]>0)).unwrap_or(8);
-            let right=(0..24).rev().find(|&x|(0..24).any(|y|glyph[y*24+x]>0)).unwrap_or(15);
-            (right-left+3) as f32*scale
+        let widths:Vec<f32>=text.chars().map(|ch| {
+            let glyph=get_glyph(ch);
+            let left=(0..24).find(|&x|(0..24).any(|y|glyph[y*24+x]>0)).unwrap_or(6);
+            let right=(0..24).rev().find(|&x|(0..24).any(|y|glyph[y*24+x]>0)).unwrap_or(17);
+            (right.saturating_sub(left)+3).max(8) as f32*scale
         }).collect();
         let total: f32=widths.iter().sum();
         let mut x=pos.x-total/2.;
-        for (ch,width) in text.bytes().zip(widths) {
-            self.letter(ch,Vec3::new(x+width/2.,pos.y,pos.z),alpha,color);
+        for (ch,width) in text.chars().zip(widths) {
+            self.letter_char(ch,Vec3::new(x+width/2.,pos.y,pos.z),alpha,color);
             x+=width;
         }
     }
-    fn letter(&mut self,ch:u8,pos:Vec3,alpha:f32,color:[u8;3]) {
-        let glyph=&glyphs()[(ch.saturating_sub(32)).min(94) as usize];
+    fn letter_char(&mut self,ch:char,pos:Vec3,alpha:f32,color:[u8;3]) {
+        let glyph=get_glyph(ch);
         let scale=(self.width as f32/360.).clamp(0.65,3.);
         let size=(24.*scale).ceil() as i32;
         for pass in 0..2 {for y in 0..size {for x in 0..size {
@@ -375,6 +381,70 @@ impl Frame {
         }}}
     }
 }
+pub(crate) fn get_glyph(ch: char) -> [u8; 576] {
+    if (ch as u32) >= 32 && (ch as u32) <= 126 {
+        let idx = (ch as usize) - 32;
+        let g = glyphs();
+        if idx < g.len() {
+            return g[idx];
+        }
+    }
+    static CACHE: OnceLock<std::sync::Mutex<std::collections::HashMap<char, [u8; 576]>>> = OnceLock::new();
+    let lock = CACHE.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()));
+    let mut map = lock.lock().unwrap();
+    if let Some(&g) = map.get(&ch) {
+        return g;
+    }
+    let glyph = render_single_glyph(ch);
+    map.insert(ch, glyph);
+    glyph
+}
+
+fn render_single_glyph(ch: char) -> [u8; 576] {
+    let mut result = [0u8; 576];
+    #[cfg(windows)]
+    unsafe {
+        use windows_sys::Win32::Graphics::Gdi::*;
+        let dc = CreateCompatibleDC(std::ptr::null_mut());
+        if dc.is_null() { return result; }
+        let mut info: BITMAPINFO = std::mem::zeroed();
+        info.bmiHeader.biSize = std::mem::size_of::<BITMAPINFOHEADER>() as u32;
+        info.bmiHeader.biWidth = 24;
+        info.bmiHeader.biHeight = -24;
+        info.bmiHeader.biPlanes = 1;
+        info.bmiHeader.biBitCount = 32;
+        let mut pixels = std::ptr::null_mut();
+        let bmp = CreateDIBSection(dc, &info, DIB_RGB_COLORS, &mut pixels, std::ptr::null_mut(), 0);
+        if bmp.is_null() { DeleteDC(dc); return result; }
+        let old = SelectObject(dc, bmp);
+        let name: Vec<u16> = "Microsoft YaHei UI".encode_utf16().chain(Some(0)).collect();
+        let font = CreateFontW(-20, 0, 0, 0, 700, 0, 0, 0, DEFAULT_CHARSET as u32, OUT_DEFAULT_PRECIS as u32, CLIP_DEFAULT_PRECIS as u32, ANTIALIASED_QUALITY as u32, DEFAULT_PITCH as u32, name.as_ptr());
+        let oldfont = SelectObject(dc, if font.is_null() { GetStockObject(DEFAULT_GUI_FONT) } else { font });
+        SetTextColor(dc, 0xFFFFFF);
+        SetBkColor(dc, 0);
+        SetBkMode(dc, OPAQUE as i32);
+        std::ptr::write_bytes(pixels, 0, 24 * 24 * 4);
+        let mut utf16 = [0u16; 2];
+        let encoded = ch.encode_utf16(&mut utf16);
+        let mut extent: windows_sys::Win32::Foundation::SIZE = std::mem::zeroed();
+        GetTextExtentPoint32W(dc, encoded.as_ptr(), encoded.len() as i32, &mut extent);
+        let x = ((24 - extent.cx) / 2).max(0);
+        let y = ((24 - extent.cy) / 2).max(0);
+        TextOutW(dc, x, y, encoded.as_ptr(), encoded.len() as i32);
+        GdiFlush();
+        let bytes = std::slice::from_raw_parts(pixels as *const u8, 24 * 24 * 4);
+        for j in 0..576 {
+            result[j] = bytes[j * 4].max(bytes[j * 4 + 1]).max(bytes[j * 4 + 2]);
+        }
+        SelectObject(dc, oldfont);
+        if !font.is_null() { DeleteObject(font); }
+        SelectObject(dc, old);
+        DeleteObject(bmp);
+        DeleteDC(dc);
+    }
+    result
+}
+
 static GLYPHS:OnceLock<Vec<[u8;576]>>=OnceLock::new();
 pub(crate) fn install_glyphs(bytes: &[u8]) -> bool {
     if bytes.len() != 95 * 576 { return false; }

@@ -121,6 +121,7 @@ pub struct Settings {
     pub custom_pose: CustomPose,
     pub custom_base: String,
     pub custom_sitting_pose: CustomPose,
+    pub language: String,
 }
 impl Default for Settings {
     fn default() -> Self {
@@ -172,6 +173,7 @@ impl Default for Settings {
             custom_pose: CustomPose::default(),
             custom_base: "standing".into(),
             custom_sitting_pose: CustomPose::default(),
+            language: "en".into(),
         }
     }
 }
@@ -216,6 +218,7 @@ impl Settings {
         if self.posture != "sitting" && self.posture != "custom" {
             self.posture = "standing".into();
         }
+        if self.language.is_empty() { self.language = "en".into(); }
         if self.arm_model != "slim" {
             self.arm_model = "classic".into();
         }

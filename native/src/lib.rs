@@ -1,6 +1,7 @@
 //! Original renderer exposed through a main-thread-only C ABI for AppKit.
 #![allow(dead_code)]
 mod config;
+pub mod i18n;
 mod keyboard;
 mod render;
 use config::{Settings, Store};

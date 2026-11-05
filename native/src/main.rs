@@ -2,6 +2,7 @@
 mod autostart;
 mod config;
 mod hyp_chat;
+mod i18n;
 mod keyboard;
 mod online;
 mod render;
@@ -1038,6 +1039,19 @@ impl App {
             168 => { self.pose.feed(self.start.elapsed().as_secs_f32()); self.wake(); }
             169 => { self.open_github(false); }
             170 => { self.check_update(); }
+            195 => { self.show_language_menu(); }
+            2000..=2150 => {
+                let idx = (id - 2000) as usize;
+                if let Some(info) = crate::i18n::LANGUAGES.get(idx) {
+                    self.settings.language = info.code.to_string();
+                    self.changed();
+                    if !self.panel.is_null() {
+                        DestroyWindow(self.panel);
+                        self.panel = null_mut();
+                        self.show_panel();
+                    }
+                }
+            }
             171 => { self.settings.music_notes = !self.settings.music_notes; self.changed(); }
             172 => { self.settings.tease_enabled = !self.settings.tease_enabled; self.changed(); }
             173 => { self.settings.breathing_animation = !self.settings.breathing_animation;  self.changed(); }
@@ -1155,7 +1169,12 @@ impl App {
             (160, "Start with Windows", self.settings.autostart),
         ]);
         append(menu, 0, "", false);
-        append(menu, 199, "Exit Minecraft Desktop Pet", false);
+        let lang_child = CreatePopupMenu();
+        self.populate_language_menu(lang_child);
+        let lang_label = format!("🌐 {}", crate::i18n::tr("language", &self.settings.language));
+        AppendMenuW(menu, MF_POPUP | MF_STRING, lang_child as usize, wide(&lang_label).as_ptr());
+        append(menu, 0, "", false);
+        append(menu, 199, crate::i18n::tr("exit_pet", &self.settings.language), false);
         let mut p = POINT { x: 0, y: 0 };
         GetCursorPos(&mut p);
         SetForegroundWindow(self.hwnd);
@@ -1177,6 +1196,75 @@ impl App {
             self.command(id as u32);
         }
     }
+    unsafe fn show_language_menu(&mut self) {
+        let btn = self.ctrl(195);
+        let mut rect: RECT = std::mem::zeroed();
+        if !btn.is_null() {
+            GetWindowRect(btn, &mut rect);
+        } else {
+            GetCursorPos(&mut rect.left as *mut _ as *mut POINT);
+            rect.bottom = rect.top + 20;
+        }
+        let menu = CreatePopupMenu();
+        self.populate_language_menu(menu);
+        SetForegroundWindow(self.panel);
+        let id = TrackPopupMenu(
+            menu,
+            TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_TOPALIGN,
+            rect.left,
+            rect.bottom,
+            0,
+            self.panel,
+            null(),
+        );
+        DestroyMenu(menu);
+        if id != 0 {
+            self.command(id as u32);
+        }
+    }
+    unsafe fn populate_language_menu(&self, menu: HMENU) {
+        let current_lang = &self.settings.language;
+        // Group languages into convenient submenus
+        let popular_codes = ["en", "zh-CN", "zh-TW", "ja", "ko", "es", "fr", "de", "ru", "pt-BR", "it", "pl", "tr", "ar", "uk", "vi", "th", "hi", "el"];
+        for (idx, info) in crate::i18n::LANGUAGES.iter().enumerate() {
+            if popular_codes.contains(&info.code) {
+                let checked = info.code == current_lang;
+                let label = format!("{} ({})", info.name, info.english_name);
+                AppendMenuW(
+                    menu,
+                    MF_STRING | if checked { MF_CHECKED } else { 0 },
+                    2000 + idx,
+                    wide(&label).as_ptr(),
+                );
+            }
+        }
+        AppendMenuW(menu, MF_SEPARATOR, 0, null());
+        let groups: &[(&str, &[&str])] = &[
+            ("A – C", &["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy"]),
+            ("D – F", &["da", "de", "el", "en", "en-GB", "eo", "es", "et", "eu", "fa", "fi", "fil", "fr", "fy"]),
+            ("G – J", &["ga", "gl", "gu", "haw", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "jv"]),
+            ("K – N", &["ka", "kk", "km", "kn", "ko", "la", "lb", "lo", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "mt", "my", "nb", "ne", "nl"]),
+            ("P – S", &["pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "so", "sq", "sr", "su", "sv", "sw"]),
+            ("T – Z & Klingon", &["ta", "te", "th", "tlh", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW"]),
+        ];
+        for &(group_title, codes) in groups {
+            let child = CreatePopupMenu();
+            for &code in codes {
+                if let Some((idx, info)) = crate::i18n::LANGUAGES.iter().enumerate().find(|(_, item)| item.code == code) {
+                    let checked = info.code == current_lang;
+                    let label = format!("{} ({})", info.name, info.english_name);
+                    AppendMenuW(
+                        child,
+                        MF_STRING | if checked { MF_CHECKED } else { 0 },
+                        2000 + idx,
+                        wide(&label).as_ptr(),
+                    );
+                }
+            }
+            AppendMenuW(menu, MF_POPUP | MF_STRING, child as usize, wide(group_title).as_ptr());
+        }
+    }
+
     unsafe fn tray(&self, action: u32) -> bool {
         let mut data: NOTIFYICONDATAW = std::mem::zeroed();
         data.cbSize = std::mem::size_of::<NOTIFYICONDATAW>() as u32;

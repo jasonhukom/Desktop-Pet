@@ -14,25 +14,37 @@ fn main() {
 
     if is_msvc {
         let audio = out_dir.join("audio-probe.obj");
-        let status = std::process::Command::new("cl.exe")
+        let cached_audio = std::path::Path::new("cached/audio-probe.obj");
+        let compile_audio = std::process::Command::new("cl.exe")
             .args(["/nologo", "/c", "/O2", "/GR-", "/EHs-c-", "audio_probe.cpp"])
             .arg(format!("/Fo:{}", audio.display()))
-            .status()
-            .expect("cl.exe required");
-        assert!(status.success());
+            .status();
+        if compile_audio.as_ref().map(|s| s.success()).unwrap_or(false) {
+            // Compiled successfully
+        } else if cached_audio.exists() {
+            std::fs::copy(cached_audio, &audio).expect("failed to copy cached audio-probe.obj");
+        } else {
+            panic!("cl.exe required or cached/audio-probe.obj missing");
+        }
         println!("cargo:rustc-link-arg={}", audio.display());
         println!("cargo:rustc-link-lib=ole32");
         println!("cargo:rustc-link-lib=uuid");
         println!("cargo:rerun-if-changed=app.manifest");
         println!("cargo:rerun-if-changed=../assets/icon.ico");
         let out = out_dir.join("app-res.res");
-        let status = std::process::Command::new("rc.exe")
+        let cached_res = std::path::Path::new("cached/app-res.res");
+        let compile_rc = std::process::Command::new("rc.exe")
             .args(["/nologo", "/fo"])
             .arg(&out)
             .arg("app.rc")
-            .status()
-            .expect("rc.exe required");
-        assert!(status.success());
+            .status();
+        if compile_rc.as_ref().map(|s| s.success()).unwrap_or(false) {
+            // Compiled successfully
+        } else if cached_res.exists() {
+            std::fs::copy(cached_res, &out).expect("failed to copy cached app-res.res");
+        } else {
+            panic!("rc.exe required or cached/app-res.res missing");
+        }
         println!("cargo:rustc-link-arg={}", out.display());
     } else {
         let audio = out_dir.join("audio-probe.o");

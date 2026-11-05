@@ -2,8 +2,8 @@
   "posture": "sitting",
   "armModel": "slim",
   "typingMode": "precise",
-  "typingSquash": 20.0,
-  "scale": 1.0,
+  "typingSquash": 20,
+  "scale": 1,
   "alwaysOnTop": true,
   "clickThrough": true,
   "trackMouse": true,
@@ -14,82 +14,83 @@
   "skinName": "Built-in · Forest Traveler",
   "skinPath": "",
   "position": null,
-  "headSensitivityX": 100.0,
-  "headSensitivityY": 38.0,
-  "headRangeX": 85.0,
-  "headRangeY": 85.0,
-  "headCenterX": 0.0,
-  "headCenterY": 0.0,
+  "headSensitivityX": 100,
+  "headSensitivityY": 38,
+  "headRangeX": 85,
+  "headRangeY": 85,
+  "headCenterX": 0,
+  "headCenterY": 0,
   "modelRotation": [
-    0.0,
-    0.0,
-    0.0
+    0,
+    0,
+    0
   ],
   "mainHand": "right",
   "customPose": {
     "head": [
-      -19.0,
-      -12.0,
-      0.0
+      -19,
+      -12,
+      0
     ],
     "body": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "leftArm": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "rightArm": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "leftLeg": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "rightLeg": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ]
   },
   "customBase": "sitting",
   "customSittingPose": {
     "head": [
-      -21.0,
-      -1.0,
-      0.0
+      -21,
+      -1,
+      0
     ],
     "body": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "leftArm": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "rightArm": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "leftLeg": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ],
     "rightLeg": [
-      0.0,
-      0.0,
-      0.0
+      0,
+      0,
+      0
     ]
   },
-  "keyboardStyle": "detailed"
+  "keyboardStyle": "detailed",
+  "language": "en"
 }

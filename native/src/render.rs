@@ -635,7 +635,7 @@ impl Pose {
                 None
             },
         };
-        if s.typing_letters { if let Some(label)=effects::key_label(vk) {
+        if s.typing_letters { if let Some(label)=effects::key_label_with_layout(vk, &s.language) {
             if self.letters.len()==64 {self.letters.remove(0);}
             let color=effects::CANDY_COLORS[self.random_choice(9)];
             self.letters.push(effects::Letter {

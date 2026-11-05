@@ -111,93 +111,110 @@ impl App {
         self.layout.clear();
         self.page_controls.clear();
         self.building_page = 3;
-        for (i, text) in ["General", "Look & Rotation", "Custom Pose"].iter().enumerate() {
+        let lang_str = self.settings.language.clone();
+        let lang = lang_str.as_str();
+        let tab_titles = [
+            crate::i18n::tr("tab_general", lang),
+            crate::i18n::tr("tab_look_rotation", lang),
+            crate::i18n::tr("tab_custom_pose", lang),
+        ];
+        for (i, text) in tab_titles.iter().enumerate() {
             self.control(
                 "BUTTON",
                 text,
                 BS_RADIOBUTTON as u32 | BS_PUSHLIKE as u32 | WS_TABSTOP,
-                24 + i as i32 * 242,
+                24 + i as i32 * 224,
                 16,
-                226,
+                216,
                 34,
                 150 + i as i32,
             );
         }
+        self.control(
+            "BUTTON",
+            "🌐",
+            BS_PUSHBUTTON as u32 | WS_TABSTOP,
+            696,
+            20,
+            40,
+            30,
+            195,
+        );
         self.building_page = 0;
         // General page: uniform 36px row pitch and aligned labels/inputs.
-        self.control("STATIC", "Skin", 0, 24, 82, 110, 24, 0);
+        self.control("STATIC", crate::i18n::tr("skin", lang), 0, 24, 82, 110, 24, 0);
         self.control("STATIC", "", SS_PATHELLIPSIS, 150, 82, 325, 24, 300);
-        self.control("BUTTON", "Import Skin…", BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 76, 120, 30, 101);
-        self.control("BUTTON", "Reset Skin", BS_PUSHBUTTON as u32 | WS_TABSTOP, 624, 76, 110, 30, 102);
-        self.control("STATIC", "Original ID", 0, 24, 118, 110, 24, 331);
+        self.control("BUTTON", crate::i18n::tr("import_skin", lang), BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 76, 120, 30, 101);
+        self.control("BUTTON", crate::i18n::tr("reset_skin", lang), BS_PUSHBUTTON as u32 | WS_TABSTOP, 624, 76, 110, 30, 102);
+        self.control("STATIC", crate::i18n::tr("original_id", lang), 0, 24, 118, 110, 24, 331);
         let input = self.control("EDIT", &self.online_id.clone(), WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL as u32, 150, 112, 325, 30, 330);
         SendMessageW(input, EM_SETLIMITTEXT, 36, 0);
-        SendMessageW(input, 0x1501, 0, wide("Java Edition username or UUID").as_ptr() as isize);
-        self.control("BUTTON", "Fetch Skin", BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 112, 120, 30, 104);
-        self.control("STATIC", "No login needed", 0, 624, 118, 110, 24, 332);
+        SendMessageW(input, 0x1501, 0, wide(crate::i18n::tr("id_placeholder", lang)).as_ptr() as isize);
+        self.control("BUTTON", crate::i18n::tr("fetch_skin", lang), BS_PUSHBUTTON as u32 | WS_TABSTOP, 490, 112, 120, 30, 104);
+        self.control("STATIC", crate::i18n::tr("no_login_needed", lang), 0, 624, 118, 110, 24, 332);
         self.control("STATIC", &self.online_notice.clone(), 0, 150, 154, 584, 24, 333);
-        self.control("STATIC", "Arms", 0, 24, 178, 110, 24, 0);
-        self.radio("Classic (4 px)", 150, 174, 155, 114);
-        self.radio("Slim (3 px)", 330, 174, 155, 115);
-        self.control("STATIC", "Appearance", 0, 24, 210, 110, 24, 0);
-        self.check("Show outer layer", 150, 206, 220, 124);
-        self.check("Chibi character", 490, 206, 220, 139);
-        self.control("STATIC", "Pose", 0, 24, 242, 110, 24, 0);
-        self.radio("Standing", 150, 238, 100, 110);
-        self.radio("Sitting", 260, 238, 100, 111);
-        self.radio("Custom", 370, 238, 115, 116);
-        self.control("STATIC", "Hold Shift while standing to sneak", 0, 490, 242, 244, 24, 0);
-        self.control("STATIC", "Typing", 0, 24, 274, 110, 24, 0);
-        self.radio("Precise", 150, 270, 155, 112);
-        self.radio("Alternating", 330, 270, 155, 113);
-        self.control("STATIC", "Main Hand", 0, 24, 306, 110, 24, 0);
-        self.radio("Right hand", 150, 302, 140, 118);
-        self.radio("Left hand", 295, 302, 140, 119);
-        self.radio("Physical map", 440, 302, 140, 165);
-        self.radio("Inverted map", 585, 302, 149, 166);
-        self.control("STATIC", "Desktop", 0, 24, 338, 110, 24, 0);
-        self.check("Always on top", 150, 334, 150, 120);
-        self.check("Click-through", 330, 334, 220, 121);
-        self.control("STATIC", "Keyboard", 0, 24, 370, 110, 24, 0);
-        self.check("Keyboard interaction", 150, 366, 170, 122);
-        self.check("hyp quick team chat", 330, 366, 220, 137);
-        self.control("STATIC", "# → /p chat", 0, 555, 370, 179, 24, 0);
-        self.control("STATIC", "Animation", 0, 24, 402, 110, 24, 0);
-        self.check("DA blink (custom skin)", 150, 398, 260, 163);
-        self.check("DA dance", 414, 398, 92, 164);
-        self.check("Typing letters", 510, 398, 128, 167);
-        self.check("Interactable", 642, 398, 92, 172);
-        self.control("STATIC", "Scale", 0, 24, 466, 110, 24, 0);
+        self.control("STATIC", crate::i18n::tr("arms", lang), 0, 24, 178, 110, 24, 0);
+        self.radio(crate::i18n::tr("classic_arms", lang), 150, 174, 155, 114);
+        self.radio(crate::i18n::tr("slim_arms", lang), 330, 174, 155, 115);
+        self.control("STATIC", crate::i18n::tr("appearance", lang), 0, 24, 210, 110, 24, 0);
+        self.check(crate::i18n::tr("show_outer_layer", lang), 150, 206, 220, 124);
+        self.check(crate::i18n::tr("chibi_character", lang), 490, 206, 220, 139);
+        self.control("STATIC", crate::i18n::tr("pose", lang), 0, 24, 242, 110, 24, 0);
+        self.radio(crate::i18n::tr("standing", lang), 150, 238, 100, 110);
+        self.radio(crate::i18n::tr("sitting", lang), 260, 238, 100, 111);
+        self.radio(crate::i18n::tr("custom", lang), 370, 238, 115, 116);
+        self.control("STATIC", crate::i18n::tr("sneak_hint", lang), 0, 490, 242, 244, 24, 0);
+        self.control("STATIC", crate::i18n::tr("typing", lang), 0, 24, 274, 110, 24, 0);
+        self.radio(crate::i18n::tr("precise", lang), 150, 270, 155, 112);
+        self.radio(crate::i18n::tr("alternating", lang), 330, 270, 155, 113);
+        self.control("STATIC", crate::i18n::tr("main_hand", lang), 0, 24, 306, 110, 24, 0);
+        self.radio(crate::i18n::tr("right_hand", lang), 150, 302, 140, 118);
+        self.radio(crate::i18n::tr("left_hand", lang), 295, 302, 140, 119);
+        self.radio(crate::i18n::tr("physical_map", lang), 440, 302, 140, 165);
+        self.radio(crate::i18n::tr("inverted_map", lang), 585, 302, 149, 166);
+        self.control("STATIC", crate::i18n::tr("desktop", lang), 0, 24, 338, 110, 24, 0);
+        self.check(crate::i18n::tr("always_on_top", lang), 150, 334, 150, 120);
+        self.check(crate::i18n::tr("click_through", lang), 330, 334, 220, 121);
+        self.control("STATIC", crate::i18n::tr("keyboard", lang), 0, 24, 370, 110, 24, 0);
+        self.check(crate::i18n::tr("keyboard_interaction", lang), 150, 366, 170, 122);
+        self.check(crate::i18n::tr("hyp_quick_team_chat", lang), 330, 366, 220, 137);
+        self.control("STATIC", crate::i18n::tr("hyp_hint", lang), 0, 555, 370, 179, 24, 0);
+        self.control("STATIC", crate::i18n::tr("animation", lang), 0, 24, 402, 110, 24, 0);
+        self.check(crate::i18n::tr("da_blink", lang), 150, 398, 260, 163);
+        self.check(crate::i18n::tr("da_dance", lang), 414, 398, 92, 164);
+        self.check(crate::i18n::tr("typing_letters", lang), 510, 398, 128, 167);
+        self.check(crate::i18n::tr("interactable", lang), 642, 398, 92, 172);
+        self.control("STATIC", crate::i18n::tr("scale", lang), 0, 24, 466, 110, 24, 0);
         self.slider(200, 150, 462, 490, 65, 180);
         self.control("STATIC", "", SS_RIGHT, 650, 466, 84, 24, 310);
-        self.control("STATIC", "Frame Rate", 0, 24, 498, 110, 24, 0);
+        self.control("STATIC", crate::i18n::tr("frame_rate", lang), 0, 24, 498, 110, 24, 0);
         self.slider(207, 150, 494, 490, 0, 6);
         self.control("STATIC", "", SS_RIGHT, 650, 498, 84, 24, 607);
-        self.control("STATIC", "Typing Squash", 0, 24, 530, 120, 24, 0);
+        self.control("STATIC", crate::i18n::tr("typing_squash", lang), 0, 24, 530, 120, 24, 0);
         self.slider(211, 150, 526, 490, 0, 30);
         self.control("STATIC", "", SS_RIGHT, 650, 530, 84, 24, 611);
-        self.control("STATIC", "Chibi Body Scale", 0, 24, 562, 125, 24, 0);
+        self.control("STATIC", crate::i18n::tr("chibi_body_scale", lang), 0, 24, 562, 125, 24, 0);
         self.slider(212, 150, 558, 490, 50, 180);
         self.control("STATIC", "", SS_RIGHT, 650, 562, 84, 24, 612);
         // PAT Meow! and sound volume (animation row is full in 2.5.2, placed in "Other" row)
-        self.control("STATIC", "Sound Volume", 0, 24, 594, 100, 24, 0);
-        self.check("PAT Meow!", 150, 590, 110, 182);
+        self.control("STATIC", crate::i18n::tr("sound_volume", lang), 0, 24, 594, 100, 24, 0);
+        self.check(crate::i18n::tr("pat_meow", lang), 150, 590, 110, 182);
         self.slider(213, 280, 590, 300, 0, 100);
         self.control("STATIC", "", SS_RIGHT, 600, 594, 84, 24, 613);
-        self.control("STATIC", "Other", 0, 24, 630, 110, 24, 0);
-        self.check("Show Cape", 150, 626, 220, 138);
-        self.check("Start with Windows", 430, 626, 304, 160);
-        self.control("STATIC", "Music", 0, 24, 662, 110, 24, 0);
-        self.check("Music note particles", 150, 658, 260, 171);
-        self.check("Breathing", 150, 430, 124, 173);
-        self.check("Stretch", 282, 430, 146, 175);
-        self.check("Tilt head", 436, 430, 138, 176);
-        self.check("Sleepy", 582, 430, 152, 177);
+        self.control("STATIC", crate::i18n::tr("other", lang), 0, 24, 630, 110, 24, 0);
+        self.check(crate::i18n::tr("show_cape", lang), 150, 626, 220, 138);
+        self.check(crate::i18n::tr("start_with_windows", lang), 430, 626, 304, 160);
+        self.control("STATIC", crate::i18n::tr("music", lang), 0, 24, 662, 110, 24, 0);
+        self.check(crate::i18n::tr("music_notes", lang), 150, 658, 260, 171);
+        self.check(crate::i18n::tr("breathing", lang), 150, 430, 124, 173);
+        self.check(crate::i18n::tr("stretch", lang), 282, 430, 146, 175);
+        self.check(crate::i18n::tr("tilt_head", lang), 436, 430, 138, 176);
+        self.check(crate::i18n::tr("sleepy", lang), 582, 430, 152, 177);
         self.building_page = 1;
-        self.control("STATIC", "Model Orientation & Rotation", 0, 24, 78, 280, 24, 0);
+        self.control("STATIC", crate::i18n::tr("model_orientation", lang), 0, 24, 78, 280, 24, 0);
         self.control(
             "BUTTON",
-            "Reset Rotation",
+            crate::i18n::tr("reset_rotation", lang),
             BS_PUSHBUTTON as u32 | WS_TABSTOP,
             624,
             72,
@@ -214,10 +231,10 @@ impl App {
             self.slider(208 + i as i32, 180, y - 3, 445, -180, 180);
             self.control("STATIC", "", SS_RIGHT, 636, y, 98, 24, 608 + i as i32);
         }
-        self.check("Track mouse cursor", 24, 268, 240, 123);
+        self.check(crate::i18n::tr("track_mouse", lang), 24, 268, 240, 123);
         self.control(
             "BUTTON",
-            "Reset Tracking",
+            crate::i18n::tr("reset_tracking", lang),
             BS_PUSHBUTTON as u32 | WS_TABSTOP,
             624,
             264,
@@ -225,8 +242,8 @@ impl App {
             30,
             132,
         );
-        self.control("STATIC", "Horizontal (X)", 0, 24, 314, 240, 24, 0);
-        self.control("STATIC", "Vertical (Y)", 0, 400, 314, 240, 24, 0);
+        self.control("STATIC", crate::i18n::tr("horizontal_x", lang), 0, 24, 314, 240, 24, 0);
+        self.control("STATIC", crate::i18n::tr("vertical_y", lang), 0, 400, 314, 240, 24, 0);
         for (col, base) in [(24, 201), (400, 204)] {
             for (row, label) in ["Sensitivity", "Range", "Center Offset"].iter().enumerate() {
                 let y = 356 + row as i32 * 62;
@@ -241,16 +258,16 @@ impl App {
                 self.slider(id, col, y + 23, 330, min, max);
             }
         }
-        self.control("STATIC", "Negative leans left, positive leans right", 0, 24, 550, 335, 24, 0);
-        self.control("STATIC", "Negative looks up, positive looks down", 0, 400, 550, 335, 24, 0);
+        self.control("STATIC", crate::i18n::tr("lean_hint", lang), 0, 24, 550, 335, 24, 0);
+        self.control("STATIC", crate::i18n::tr("look_hint", lang), 0, 400, 550, 335, 24, 0);
 
         self.building_page = 2;
-        self.radio("Use custom pose", 24, 74, 230, 117);
+        self.radio(crate::i18n::tr("use_custom_pose", lang), 24, 74, 230, 117);
         self.radio("Standing", 300, 74, 110, 135);
         self.radio("Sitting", 425, 74, 110, 136);
         self.control(
             "BUTTON",
-            "Reset Pose",
+            crate::i18n::tr("reset_pose", lang),
             BS_PUSHBUTTON as u32 | WS_TABSTOP,
             624,
             72,
@@ -260,7 +277,7 @@ impl App {
         );
         self.control(
             "STATIC",
-            "Standing and sitting poses are saved separately; sitting angles adjust upon default sit pose.",
+            crate::i18n::tr("custom_pose_hint_1", lang),
             0,
             24,
             116,
@@ -289,7 +306,7 @@ impl App {
         }
         self.control(
             "STATIC",
-            "Sitting pose supports typing, holding, and waving; returns to set pose afterwards.",
+            crate::i18n::tr("custom_pose_hint_2", lang),
             0,
             24,
             554,
@@ -299,7 +316,7 @@ impl App {
         );
         self.control(
             "STATIC",
-            "Head angles apply when mouse tracking is off; limbs do not bend.",
+            crate::i18n::tr("custom_pose_hint_3", lang),
             0,
             24,
             580,
@@ -308,18 +325,18 @@ impl App {
             0,
         );
 
-        self.control("STATIC", "Keyboard Style", 0, 24, 630, 110, 24, 0);
-        self.radio("Simple", 150, 626, 110, 184);
-        self.radio("Detailed", 280, 626, 110, 185);
-        self.control("STATIC", "Keyboard Color", 0, 410, 630, 100, 24, 0);
+        self.control("STATIC", crate::i18n::tr("keyboard_style", lang), 0, 24, 630, 110, 24, 0);
+        self.radio(crate::i18n::tr("simple", lang), 150, 626, 110, 184);
+        self.radio(crate::i18n::tr("detailed", lang), 280, 626, 110, 185);
+        self.control("STATIC", crate::i18n::tr("keyboard_color", lang), 0, 410, 630, 100, 24, 0);
         let color = self.control("EDIT", &self.settings.keyboard_color.clone(), WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL as u32, 510, 626, 116, 28, 334);
         SendMessageW(color, EM_SETLIMITTEXT, 7, 0);
         self.control("BUTTON", "✓", BS_PUSHBUTTON as u32 | WS_TABSTOP, 634, 626, 36, 28, 174);
         self.building_page = 3;
-        self.control("BUTTON", "Check Updates", BS_PUSHBUTTON as u32 | WS_TABSTOP, 24, 726, 120, 30, 170);
-        self.control("BUTTON", "GitHub", BS_PUSHBUTTON as u32 | WS_TABSTOP, 614, 726, 120, 30, 169);
-        self.check("Lock double-click (double-click won't open settings)", 170, 726, 430, 183);
-        self.status = self.control("STATIC", "Saved", 0, 24, 774, 465, 24, 320);
+        self.control("BUTTON", crate::i18n::tr("check_updates", lang), BS_PUSHBUTTON as u32 | WS_TABSTOP, 24, 726, 120, 30, 170);
+        self.control("BUTTON", crate::i18n::tr("github", lang), BS_PUSHBUTTON as u32 | WS_TABSTOP, 614, 726, 120, 30, 169);
+        self.check(crate::i18n::tr("lock_double_click", lang), 170, 726, 430, 183);
+        self.status = self.control("STATIC", crate::i18n::tr("saved", lang), 0, 24, 774, 465, 24, 320);
         self.control(
             "STATIC",
             "Created by GPT 6 Astra",
@@ -332,7 +349,7 @@ impl App {
         );
         self.control(
             "STATIC",
-            "Drag to move · Right-click for menu · Double-click for settings; closing this window will not exit the pet.",
+            crate::i18n::tr("window_hint", lang),
             0,
             24,
             800,

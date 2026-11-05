@@ -27,9 +27,15 @@ extension AppDelegate {
             let button = NSButton(title: title, target: self, action: #selector(selectConsolePage(_:)))
             button.setButtonType(.pushOnPushOff); button.bezelStyle = .regularSquare
             button.font = .systemFont(ofSize: 15, weight: .medium); button.tag = index
-            button.frame = NSRect(x: 24 + index * 246, y: 764, width: 220, height: 34)
+            button.frame = NSRect(x: 24 + index * 224, y: 764, width: 216, height: 34)
             button.setAccessibilityLabel(title); root.addSubview(button); pageButtons.append(button)
         }
+        let langBtn = NSButton(title: "🌐", target: self, action: #selector(showLanguageMenu(_:)))
+        langBtn.bezelStyle = .regularSquare
+        langBtn.font = .systemFont(ofSize: 16)
+        langBtn.frame = NSRect(x: 696, y: 760, width: 40, height: 32)
+        langBtn.setAccessibilityLabel("Language")
+        root.addSubview(langBtn)
         let tabs = NSTabView(frame: NSRect(origin: NSPoint(x: 24, y: 114), size: ConsoleSize.page))
         tabs.tabViewType = .noTabsNoBorder
         for title in ["General", "Look & Rotation", "Custom Pose"] {
@@ -448,3 +454,143 @@ extension AppDelegate {
     }
     @objc func previewSwing() { handleMousePress(); wake() }
 }
+
+enum LanguageList {
+    static let all: [(String, String, String)] = [
+        ("en", "English (US)", "English (US)"),
+        ("en-GB", "English (UK)", "English (UK)"),
+        ("zh-CN", "简体中文", "Simplified Chinese"),
+        ("zh-TW", "繁體中文", "Traditional Chinese"),
+        ("ja", "日本語", "Japanese"),
+        ("ko", "한국어", "Korean"),
+        ("es", "Español", "Spanish"),
+        ("fr", "Français", "French"),
+        ("de", "Deutsch", "German"),
+        ("ru", "Русский", "Russian"),
+        ("pt-BR", "Português (Brasil)", "Portuguese (Brazil)"),
+        ("pt-PT", "Português (Portugal)", "Portuguese (Portugal)"),
+        ("it", "Italiano", "Italian"),
+        ("nl", "Nederlands", "Dutch"),
+        ("pl", "Polski", "Polish"),
+        ("tr", "Türkçe", "Turkish"),
+        ("ar", "العربية", "Arabic"),
+        ("he", "עברית", "Hebrew"),
+        ("uk", "Українська", "Ukrainian"),
+        ("vi", "Tiếng Việt", "Vietnamese"),
+        ("th", "ไทย", "Thai"),
+        ("hi", "हिन्दी", "Hindi"),
+        ("el", "Ελληνικά", "Greek"),
+        ("sv", "Svenska", "Swedish"),
+        ("da", "Dansk", "Danish"),
+        ("fi", "Suomi", "Finnish"),
+        ("nb", "Norsk Bokmål", "Norwegian"),
+        ("cs", "Čeština", "Czech"),
+        ("hu", "Magyar", "Hungarian"),
+        ("ro", "Română", "Romanian"),
+        ("bg", "Български", "Bulgarian"),
+        ("sk", "Slovenčina", "Slovak"),
+        ("hr", "Hrvatski", "Croatian"),
+        ("sr", "Српски", "Serbian"),
+        ("sl", "Slovenščina", "Slovenian"),
+        ("lt", "Lietuvių", "Lithuanian"),
+        ("lv", "Latviešu", "Latvian"),
+        ("et", "Eesti", "Estonian"),
+        ("ca", "Català", "Catalan"),
+        ("eu", "Euskara", "Basque"),
+        ("gl", "Galego", "Galician"),
+        ("fil", "Filipino", "Filipino"),
+        ("ms", "Bahasa Melayu", "Malay"),
+        ("id", "Bahasa Indonesia", "Indonesian"),
+        ("fa", "فارسی", "Persian"),
+        ("ur", "اردو", "Urdu"),
+        ("bn", "বাংলা", "Bengali"),
+        ("ta", "தமிழ்", "Tamil"),
+        ("te", "తెలుగు", "Telugu"),
+        ("ml", "മലയാളം", "Malayalam"),
+        ("kn", "ಕನ್ನಡ", "Kannada"),
+        ("mr", "मराठी", "Marathi"),
+        ("gu", "ગુજરાતી", "Gujarati"),
+        ("pa", "ਪੰਜਾਬੀ", "Punjabi"),
+        ("ka", "ქართული", "Georgian"),
+        ("hy", "Հայերեն", "Armenian"),
+        ("kk", "Қазақша", "Kazakh"),
+        ("uz", "O‘zbekcha", "Uzbek"),
+        ("mn", "Монгол", "Mongolian"),
+        ("az", "Azərbaycanca", "Azerbaijani"),
+        ("sw", "Kiswahili", "Swahili"),
+        ("af", "Afrikaans", "Afrikaans"),
+        ("is", "Íslenska", "Icelandic"),
+        ("ga", "Gaeilge", "Irish"),
+        ("cy", "Cymraeg", "Welsh"),
+        ("mt", "Malti", "Maltese"),
+        ("mk", "Македонски", "Macedonian"),
+        ("bs", "Bosanski", "Bosnian"),
+        ("sq", "Shqip", "Albanian"),
+        ("be", "Беларуская", "Belarusian"),
+        ("eo", "Esperanto", "Esperanto"),
+        ("la", "Latina", "Latin"),
+        ("lb", "Lëtzebuergesch", "Luxembourgish"),
+        ("fy", "Frysk", "Western Frisian"),
+        ("jv", "Basa Jawa", "Javanese"),
+        ("su", "Basa Sunda", "Sundanese"),
+        ("my", "မြန်မာဘာသာ", "Burmese"),
+        ("km", "ភាសាខ្មែរ", "Khmer"),
+        ("lo", "ພາສາລາວ", "Lao"),
+        ("ne", "नेपाली", "Nepali"),
+        ("si", "සිංහල", "Sinhala"),
+        ("am", "አማርኛ", "Amharic"),
+        ("so", "Soomaali", "Somali"),
+        ("haw", "ʻŌlelo Hawaiʻi", "Hawaiian"),
+        ("tlh", "tlhIngan Hol", "Klingon"),
+    ]
+}
+
+    @objc func showLanguageMenu(_ sender: NSButton) {
+        let menu = NSMenu(title: "Language")
+        let currentLang = settings["language"] as? String ?? "en"
+        let popularCodes = ["en", "zh-CN", "zh-TW", "ja", "ko", "es", "fr", "de", "ru", "pt-BR", "it", "pl", "tr", "ar", "uk", "vi", "th", "hi", "el"]
+        for (code, name, eng) in LanguageList.all {
+            if popularCodes.contains(code) {
+                let item = NSMenuItem(title: "\(name) (\(eng))", action: #selector(selectLanguageItem(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = code
+                if code == currentLang { item.state = .on }
+                menu.addItem(item)
+            }
+        }
+        menu.addItem(.separator())
+        let groups: [(String, [String])] = [
+            ("A – C", ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy"]),
+            ("D – F", ["da", "de", "el", "en", "en-GB", "eo", "es", "et", "eu", "fa", "fi", "fil", "fr", "fy"]),
+            ("G – J", ["ga", "gl", "gu", "haw", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "jv"]),
+            ("K – N", ["ka", "kk", "km", "kn", "ko", "la", "lb", "lo", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "mt", "my", "nb", "ne", "nl"]),
+            ("P – S", ["pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "so", "sq", "sr", "su", "sv", "sw"]),
+            ("T – Z & Klingon", ["ta", "te", "th", "tlh", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW"]),
+        ]
+        for (title, codes) in groups {
+            let sub = NSMenu(title: title)
+            for code in codes {
+                if let entry = LanguageList.all.first(where: { $0.0 == code }) {
+                    let item = NSMenuItem(title: "\(entry.1) (\(entry.2))", action: #selector(selectLanguageItem(_:)), keyEquivalent: "")
+                    item.target = self
+                    item.representedObject = code
+                    if code == currentLang { item.state = .on }
+                    sub.addItem(item)
+                }
+            }
+            let parentItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+            parentItem.submenu = sub
+            menu.addItem(parentItem)
+        }
+        let location = NSPoint(x: 0, y: sender.bounds.height)
+        menu.popUp(positioning: nil, at: location, in: sender)
+    }
+    @objc func selectLanguageItem(_ sender: NSMenuItem) {
+        guard let code = sender.representedObject as? String else { return }
+        settings["language"] = code
+        changed()
+        save()
+        panel?.close()
+        panel = nil
+        showSettings()
+    }
