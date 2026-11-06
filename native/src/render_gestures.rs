@@ -247,6 +247,7 @@ impl Pose {
     pub(super) fn apply_gesture(&mut self, s: &Settings, now: f32) {
         self.gesture_jump=0.;
         self.gesture_shake=Vec3::ZERO;
+        self.gesture_bounce_squash=0.;
         self.cheek_cover=0.;
         if let Some(g)=self.gesture {
             let t=(now-g.start).max(0.);
@@ -266,6 +267,23 @@ impl Pose {
                         let flight=((t-0.12)/0.48).clamp(0.,2.);
                         let hop=if flight>0. && flight<2. {(flight.fract()*std::f32::consts::PI).sin()} else {0.};
                         self.gesture_jump=hop*3.6*w;
+                        let squash_curve = if t < 0.12 {
+                            -((t / 0.12 * std::f32::consts::PI).sin()) * 0.13
+                        } else if flight > 0. && flight < 2. {
+                            let cycle = flight.fract();
+                            if cycle < 0.16 {
+                                -((1. - cycle / 0.16) * 0.11)
+                            } else if cycle > 0.84 {
+                                -(((cycle - 0.84) / 0.16) * 0.11)
+                            } else {
+                                hop * 0.10
+                            }
+                        } else if t < 1.32 {
+                            -(((t - 1.08) / 0.24 * std::f32::consts::PI).sin().max(0.)) * 0.11
+                        } else {
+                            0.
+                        };
+                        self.gesture_bounce_squash = squash_curve * w;
                         for side in 0..2 {self.arms[side]*=rotation(-0.12*w,0.,if side==0 {0.22*w} else {-0.22*w});}
                     }
                     Gesture::Shy=>{

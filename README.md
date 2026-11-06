@@ -8,13 +8,49 @@ Have a Minecraft-style character sit on your desktop, track your cursor, and kee
 
 > This project is an independent fan work and is not affiliated with, endorsed by, sponsored by, or officially approved by Mojang Studios or Microsoft. The Minecraft name and related trademarks belong to their respective owners.
 
-## Download
+## Downloads & Editions
 
-Go to the [Latest Release](https://github.com/jasonhukom/Desktop-Pet/releases/latest) to download.
+Choose between two distinct editions depending on the experience you want:
 
-Supports **Windows 10/11 x64 and macOS (Apple Silicon 12+, Intel 13+)**. Fully portable; no need to install Electron, Java, or additional runtime environments. v1.0.0 provides both Windows and macOS editions.
+---
 
-**Full mouse click-through is enabled by default on first launch.** Double-click the tray icon to open Settings/Console; disable "Click-Through" first when you want to drag the pet. The icon may be located in the taskbar overflow area.
+### 1. 🌐 Classic / Multilingual Edition (`v1.0.1`)
+*The original, faithful Minecraft desktop companion with comprehensive internationalization.*
+
+- **What it is**: The classic desktop pet with stable, true-to-game Minecraft animation mechanics, plus full internationalization support.
+- **Key Features**:
+  - **85+ Languages**: Full UI translations across settings, tabs, labels, and context menus.
+  - **Keyboard Alphabet Typing**: Animated typing letters automatically adapt to your active language and keyboard layout.
+  - **High-Quality Unicode Glyphs**: Crisp rasterization for Cyrillic, Greek, Arabic, Hebrew, CJK, Indic, and European alphabets.
+  - **Standard Minecraft Poses**: Classic standing, sitting, sneaking, and custom posing without exaggerated jelly physics.
+- **Downloads (`v1.0.1`)**:
+  - 🪟 **Windows 10/11 x64**: [Minecraft-Desktop-Pet-1.0.1-Windows.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-Windows.zip) *(Portable `.exe`)*
+  - 🍏 **macOS Universal**: [Minecraft-Desktop-Pet-1.0.1-mac-universal.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-mac-universal.zip) *(Apple Silicon + Intel)*
+  - 🍏 **macOS Apple Silicon**: [Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip) *(M1/M2/M3/M4)*
+  - 🍏 **macOS Intel**: [Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip) *(x86_64)*
+
+---
+
+### 2. ⚡ Bounce Edition (`v1.0.1.b Bounce`)
+*A completely different, lively physics-driven sandbox experience!*
+
+- **What it is**: Transforms the pet into a bouncy, springy, expressive jelly companion that reacts dynamically to being dragged, tossed, shaken, and petted.
+- **Key Features**:
+  - **Bouncy Jelly Physics**: Squashes, stretches, tilts, and wobbles with spring physics during movement and interactions.
+  - **Drag & Throw Momentum**: Pick up your pet, flick or throw them across your desktop, and watch them rebound off screen edges with realistic inertia.
+  - **Petting & Rubbing (Hearts)**: Rubbing the mouse back and forth over the pet spawns floating Minecraft heart particles.
+  - **Dizzy Shaking (Stars)**: Violently shaking the pet disorients them and spawns dizzy spinning stars.
+  - **Mouse Wheel Scaling**: Scroll your mouse wheel directly over the pet to smoothly grow or shrink their size on the desktop.
+  - **Includes All v1.0.1 Languages**: Retains the 85+ language switcher, translations, and layout-aware typing animations.
+- **Downloads (`v1.0.1.b Bounce`)**:
+  - 🪟 **Windows 10/11 x64**: [Minecraft-Desktop-Pet-1.0.1-Windows.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-Windows.zip) *(Portable `.exe`)*
+  - 🍏 **macOS Universal**: [Minecraft-Desktop-Pet-1.0.1-mac-universal.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-mac-universal.zip) *(Apple Silicon + Intel)*
+  - 🍏 **macOS Apple Silicon**: [Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip) *(M1/M2/M3/M4)*
+  - 🍏 **macOS Intel**: [Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip) *(x86_64)*
+
+---
+
+**Tip**: **Full mouse click-through is enabled by default on first launch.** Double-click the tray icon to open Settings/Console; disable "Click-Through" first when you want to drag the pet. The icon may be located in the taskbar overflow area.
 
 ## Features
 

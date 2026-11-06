@@ -1,3 +1,13 @@
+# v1.0.1.b Bounce Edition
+- **Bouncy Jelly Physics**: Dynamic squash, stretch, and wobble inertia on interactions and motion.
+- **Drag & Throw Momentum**: Throw the pet across the screen with velocity-based bouncing off display borders.
+- **Petting & Rubbing**: Rapid petting triggers floating Minecraft heart particles.
+- **Dizzy Shaking**: Fast shaking spawns spinning dizzy stars.
+- **Mouse Wheel Scaling**: Adjust pet size on the fly with mouse wheel scrolling.
+- **Combined with v1.0.1**: Retains all 85+ multilingual translations and layout-aware keyboard typing animations.
+
+---
+
 # v1.0.1
 - Added multilingual language selection button (🌐) with dropdown supporting 85 languages.
 - Complete UI translations for console tabs, labels, buttons, and context menus across Windows and macOS.

@@ -413,6 +413,8 @@ const HOLD_ENTER: f32 = 0.15; // 手部原地淡入
 const HOLD_EXIT: f32 = 0.15; // 松手后手部淡出
 const HAND_FRAMES: usize = 5; // 视频只有 5 张画在循环
 const HAND_FPS: f32 = 16.; // 视频的循环节奏：5 画 / 0.3125 秒
+const BOUNCE_SECONDS: f32 = 0.60;
+const IMPACT_SECONDS: f32 = 0.50;
 pub struct Pose {
     gesture: Option<gestures::ActiveGesture>,
     gesture_return: Option<gestures::ReturnPose>,
@@ -421,7 +423,29 @@ pub struct Pose {
     last_gesture_input: f32,
     gesture_jump: f32,
     gesture_shake: Vec3,
+    gesture_bounce_squash: f32,
     cheek_cover: f32,
+    bounce_start: Option<f32>,
+    bounce_amp: f32,
+    bounce_hop_amp: f32,
+    pub bounce_disp: f32,
+    pub bounce_hop: f32,
+    pub drag_tilt: Vec2,
+    drag_tilt_target: Vec2,
+    pub drag_stretch: f32,
+    drag_stretch_target: f32,
+    last_drag_vel: Vec2,
+    impact_start: Option<f32>,
+    impact_normal: Vec2,
+    pub impact_jolt: Vec2,
+    pub dizzy_energy: f32,
+    pub dizzy_until: Option<f32>,
+    hearts: Vec<effects::Heart>,
+    heart_seq: u32,
+    next_hold_heart: f32,
+    rub_accum: f32,
+    last_rub_dir: f32,
+    last_rub_time: f32,
     tease_start:Option<f32>,
     tease_kind:usize,
     tease_from_head:Quat,
@@ -531,7 +555,29 @@ impl Pose {
             gesture: None, gesture_return: None, next_gesture: None,
             occasional_mask: 0, last_gesture_input: 0., gesture_jump: 0.,
             gesture_shake: Vec3::ZERO,
+            gesture_bounce_squash: 0.,
             cheek_cover: 0.,
+            bounce_start: None,
+            bounce_amp: 0.,
+            bounce_hop_amp: 0.,
+            bounce_disp: 0.,
+            bounce_hop: 0.,
+            drag_tilt: Vec2::ZERO,
+            drag_tilt_target: Vec2::ZERO,
+            drag_stretch: 0.,
+            drag_stretch_target: 0.,
+            last_drag_vel: Vec2::ZERO,
+            impact_start: None,
+            impact_normal: Vec2::ZERO,
+            impact_jolt: Vec2::ZERO,
+            dizzy_energy: 0.,
+            dizzy_until: None,
+            hearts: Vec::with_capacity(16),
+            heart_seq: 0,
+            next_hold_heart: 0.,
+            rub_accum: 0.,
+            last_rub_dir: 0.,
+            last_rub_time: 0.,
             tease_start:None,tease_kind:0,
             tease_from_head:Quat::IDENTITY,tease_from_arms:[Quat::IDENTITY;2],
             breathing_weight:0.,breathing_bob:0.,
@@ -601,6 +647,8 @@ impl Pose {
     pub fn needs_frames(&self) -> bool {
         self.gesture.is_some() || self.gesture_return.is_some() || self.dance > 0.001 || self.feed_start.is_some() || self.tease_start.is_some() || self.breathing_weight>0.001 || !self.letters.is_empty() || !self.notes.is_empty()
             || self.hold_active() || self.pat_start.is_some()
+            || !self.hearts.is_empty() || self.dizzy_until.is_some() || self.bounce_start.is_some()
+            || self.impact_start.is_some() || self.drag_stretch > 0.001 || self.drag_tilt.length_squared() > 0.0001
     }
     pub fn key(&mut self, vk: u32, down: bool, now: f32, s: &Settings) {
         if down { self.gesture_input(now); }
@@ -659,6 +707,7 @@ impl Pose {
         self.tease_kind=self.random_choice(3);
         self.tease_start=Some(now);
         self.feed_start=None;self.feed_blend=0.;self.reset_swing();
+        self.trigger_bounce(now, -0.11, 1.3);
     }
     /// 诊断快照里的 interaction：现在报告「可调戏」长按状态、手部帧与透明度。
     pub fn interaction_state(&self)->(bool,usize,f32) {(self.tease_start.is_some(),self.tease_kind,self.breathing_weight)}
@@ -666,6 +715,141 @@ impl Pose {
     /// PAT喵！：点击桌宠时的一次性手部动画（不持续，时长与点击压缩一致）。
     pub fn pat(&mut self, now: f32) {
         self.pat_start = Some(now);
+        self.trigger_bounce(now, -0.10, 1.0);
+        self.spawn_heart(now);
+    }
+    /// 触发一次阻尼弹簧 Q 弹形变与跳跃（全部按 `now` 求值，掉帧/休眠后仍然连续）。
+    pub fn trigger_bounce(&mut self, now: f32, amp: f32, hop: f32) {
+        self.bounce_start = Some(now);
+        self.bounce_amp = amp.clamp(-0.28, 0.28);
+        self.bounce_hop_amp = hop.clamp(0., 5.5);
+    }
+    /// 在头顶生成一颗漂浮的粉红爱心粒子。
+    pub fn spawn_heart(&mut self, now: f32) {
+        if self.hearts.len() >= 16 {
+            self.hearts.remove(0);
+        }
+        let seq = self.heart_seq;
+        self.heart_seq = self.heart_seq.wrapping_add(1);
+        let offsets = [-2.4f32, 1.8, -0.9, 2.5, -1.7, 0.8];
+        let scales = [0.95f32, 1.12, 1.0, 1.18, 0.90, 1.06];
+        let offset_x = offsets[(seq as usize) % offsets.len()];
+        let scale = scales[(seq as usize) % scales.len()];
+        let color = effects::HEART_COLORS[(seq as usize) % effects::HEART_COLORS.len()];
+        let phase = seq as f32 * 1.7;
+        self.hearts.push(effects::Heart {
+            start: now,
+            offset_x,
+            phase,
+            scale,
+            color,
+        });
+    }
+    /// 抓起桌宠时的受惊/Q弹起跳反应。
+    pub fn on_pickup(&mut self, now: f32) {
+        self.trigger_bounce(now, -0.11, 1.6);
+        self.last_drag_vel = Vec2::ZERO;
+    }
+    /// 拖动过程中的速度倾斜、拉伸与摇晃眩晕累计（vx, vy 单位：逻辑像素/秒）。
+    pub fn set_drag_motion(&mut self, vx: f32, vy: f32, now: f32) {
+        let speed = vx.hypot(vy);
+        self.drag_tilt_target = Vec2::new(
+            (-vx * 0.00045).clamp(-0.42, 0.42),
+            (vy * 0.00028).clamp(-0.24, 0.24),
+        );
+        self.drag_stretch_target = (speed * 0.00011).clamp(0., 0.14);
+        let rev_x = vx.abs() > 240. && self.last_drag_vel.x.abs() > 240. && (vx * self.last_drag_vel.x < 0.);
+        let rev_y = vy.abs() > 240. && self.last_drag_vel.y.abs() > 240. && (vy * self.last_drag_vel.y < 0.);
+        if (rev_x || rev_y) && speed > 450. {
+            self.dizzy_energy = (self.dizzy_energy + (speed / 2200.).clamp(0.18, 0.45)).min(2.0);
+            self.trigger_bounce(now, -0.09, 0.8);
+            if self.dizzy_energy >= 1.0 {
+                self.trigger_dizzy(now);
+            }
+        }
+        if speed > 120. {
+            self.last_drag_vel = Vec2::new(vx, vy);
+        }
+    }
+    /// 抛掷飞行过程中的空中倾角与拉伸。
+    pub fn set_flight_motion(&mut self, vx: f32, vy: f32) {
+        let speed = vx.hypot(vy);
+        self.drag_tilt_target = Vec2::new(
+            (-vx * 0.00038).clamp(-0.45, 0.45),
+            (vy * 0.00025).clamp(-0.26, 0.26),
+        );
+        self.drag_stretch_target = (speed * 0.00009).clamp(0., 0.13);
+    }
+    /// 结束拖动或抛掷飞行，恢复直立姿态。
+    pub fn end_drag(&mut self, _now: f32) {
+        self.drag_tilt_target = Vec2::ZERO;
+        self.drag_stretch_target = 0.;
+        self.last_drag_vel = Vec2::ZERO;
+    }
+    /// 抛掷撞击屏幕边缘时的弹性挤压、冲击震颤与高速眩晕。
+    pub fn on_wall_impact(&mut self, normal: Vec2, speed: f32, now: f32) {
+        let strength = (speed / 950.).clamp(0.20, 1.0);
+        let amp = if normal.x.abs() > normal.y.abs() {
+            0.14 * strength
+        } else {
+            -0.16 * strength
+        };
+        self.trigger_bounce(now, amp, 2.2 * strength);
+        self.impact_start = Some(now);
+        self.impact_normal = normal.normalize_or_zero() * strength;
+        if speed > 1100. {
+            self.dizzy_energy = (self.dizzy_energy + 0.55 * strength).min(2.0);
+            if speed > 1550. || self.dizzy_energy >= 1.0 {
+                self.trigger_dizzy(now);
+            }
+        }
+    }
+    /// 落地或放下时的弹性缓冲回弹。
+    pub fn on_land(&mut self, speed: f32, now: f32) {
+        let strength = (speed / 650.).clamp(0.30, 1.0);
+        self.trigger_bounce(now, -0.12 * strength, 1.5 * strength);
+    }
+    /// 鼠标滚轮缩放时的 Q 弹脉冲。
+    pub fn on_scale_step(&mut self, delta: f32, now: f32) {
+        let sign = if delta >= 0. { 1. } else { -1. };
+        self.trigger_bounce(now, sign * 0.09, 1.0);
+    }
+    /// 鼠标在桌宠身上来回抚摸（Rub-to-Pet）判定：攒满行程后冒出粉红爱心并欢快弹跳。
+    pub fn on_rub_move(&mut self, dx: f32, dy: f32, now: f32) -> bool {
+        if now - self.last_rub_time > 0.45 {
+            self.rub_accum = 0.;
+            self.last_rub_dir = 0.;
+        }
+        self.last_rub_time = now;
+        let step = dx.hypot(dy);
+        if !(1.5..=90.).contains(&step) {
+            return false;
+        }
+        let dir = if dx.abs() >= dy.abs() { dx.signum() } else { dy.signum() };
+        let bonus = if self.last_rub_dir != 0. && dir != self.last_rub_dir { 1.6 } else { 1.0 };
+        self.last_rub_dir = dir;
+        self.rub_accum += step * bonus;
+        if self.rub_accum >= 85. {
+            self.rub_accum = 0.;
+            self.spawn_heart(now);
+            self.trigger_bounce(now, -0.09, 1.2);
+            return true;
+        }
+        false
+    }
+    /// 触发眩晕状态（头顶旋转金星 + 身体摇晃）。
+    pub fn trigger_dizzy(&mut self, now: f32) {
+        self.dizzy_until = Some(now + 2.7);
+        self.dizzy_energy = 0.;
+    }
+    /// 当前眩晕强度（0..=1），在结束前 0.4 秒平滑淡出。
+    pub fn dizzy_strength(&self, now: f32) -> f32 {
+        let Some(until) = self.dizzy_until else { return 0.; };
+        let rem = until - now;
+        if rem <= 0. {
+            return 0.;
+        }
+        (rem / 0.4).clamp(0., 1.)
     }
     /// 长按开始：手部在头部淡入，随后进入素材循环。
     pub fn start_hold(&mut self, now: f32) {
@@ -802,6 +986,11 @@ impl Pose {
         now: f32,
         dt: f32,
     ) {
+        let step_dt = if now > self.clock {
+            (now - self.clock).max(dt)
+        } else {
+            dt
+        };
         self.clock=now;
         self.schedule_gesture(s,now);
         if self.tease_start.is_some_and(|t|now-t>=0.5) {self.tease_start=None;}
@@ -816,7 +1005,51 @@ impl Pose {
             self.notes.push(effects::Note {start:now,phase:now*2.4});self.next_note=now+0.5;
         }
         self.letters.retain(|p| now-p.start<0.8 && s.typing_letters && s.is_sitting());
+        self.hearts.retain(|h| (0.0..0.95).contains(&(now - h.start)));
         if self.feed_start.is_some_and(|t|now-t>=1.85) {self.feed_start=None;}
+        if self.dizzy_until.is_some_and(|u| now >= u) {
+            self.dizzy_until = None;
+        }
+        self.dizzy_energy = (self.dizzy_energy - step_dt * 0.65).max(0.);
+        if let Some(start) = self.bounce_start {
+            let t = now - start;
+            if !(0.0..BOUNCE_SECONDS).contains(&t) {
+                self.bounce_start = None;
+                self.bounce_disp = 0.;
+                self.bounce_hop = 0.;
+            } else {
+                let attack = smooth(t / 0.032);
+                let fade = 1. - smooth((t - (BOUNCE_SECONDS - 0.16)) / 0.16);
+                let wave = (t * 19.5).cos() * (-4.8 * t).exp();
+                self.bounce_disp = self.bounce_amp * attack * wave * fade;
+                let hop_t = (t / 0.34).clamp(0., 1.);
+                self.bounce_hop = 4. * hop_t * (1. - hop_t) * self.bounce_hop_amp;
+            }
+        } else {
+            self.bounce_disp = 0.;
+            self.bounce_hop = 0.;
+        }
+        if let Some(start) = self.impact_start {
+            let t = now - start;
+            if !(0.0..IMPACT_SECONDS).contains(&t) {
+                self.impact_start = None;
+                self.impact_jolt = Vec2::ZERO;
+            } else {
+                let env = smooth(t / 0.025) * (-6.0 * t).exp() * (1. - smooth((t - 0.35) / 0.15));
+                self.impact_jolt = self.impact_normal * (t * 28.0).cos() * env;
+            }
+        } else {
+            self.impact_jolt = Vec2::ZERO;
+        }
+        let drag_blend = 1. - (-step_dt * 18.).exp();
+        self.drag_tilt += (self.drag_tilt_target - self.drag_tilt) * drag_blend;
+        if self.drag_tilt_target == Vec2::ZERO && self.drag_tilt.length_squared() < 1e-6 {
+            self.drag_tilt = Vec2::ZERO;
+        }
+        self.drag_stretch += (self.drag_stretch_target - self.drag_stretch) * drag_blend;
+        if self.drag_stretch_target == 0. && self.drag_stretch.abs() < 1e-4 {
+            self.drag_stretch = 0.;
+        }
         let a = 1. - (-dt * 12.).exp();
         let sit = if s.is_sitting() { 1. } else { 0. };
         let crouch = if s.posture == "standing" && (s.da_dance || (shift && s.keyboard_enabled)) {
@@ -868,6 +1101,10 @@ impl Pose {
         self.hand_alpha = hand_alpha;
         self.hand_pop = hand_pop;
         self.holding = self.hold_start.is_some();
+        if self.holding && now >= self.next_hold_heart {
+            self.spawn_heart(now);
+            self.next_hold_heart = now + 0.45;
+        }
         self.squash = typing_squash * hand_squash;
         // 眨眼只依赖时间轴，和姿势、敲字、挥动互不干预。
         // `eyelid` 还要乘上材质包的 `eye_top.ty` 开合（见下面的 `var.nov1` 一段）。
@@ -1128,7 +1365,46 @@ impl Pose {
                 self.arms[1]*=rotation(-wave*0.55,0.,-wave*0.70);
             }
         }
+        let dizzy = self.dizzy_strength(now);
+        if dizzy > 0.001 {
+            let wobble_x = (now * 9.5).sin() * 0.22 * dizzy;
+            let wobble_z = (now * 7.8).cos() * 0.28 * dizzy;
+            self.head_rotation *= rotation(wobble_x, (now * 6.2).sin() * 0.18 * dizzy, wobble_z);
+            self.arms[0] *= rotation(wobble_z * 0.6, 0., 0.25 * dizzy + wobble_x * 0.5);
+            self.arms[1] *= rotation(-wobble_z * 0.6, 0., -0.25 * dizzy - wobble_x * 0.5);
+            self.eyelid *= 1. - 0.52 * dizzy;
+        }
+        if self.drag_stretch > 0.001 || self.drag_tilt.length_squared() > 1e-5 {
+            let flare = (self.drag_stretch * 2.8).clamp(0., 0.45);
+            let sway = self.drag_tilt.x * 0.65;
+            self.arms[0] *= rotation(-flare * 0.5, 0., flare + sway);
+            self.arms[1] *= rotation(-flare * 0.5, 0., -flare + sway);
+        }
         self.resolve_letter_origins(s,skin);
+    }
+    pub(super) fn has_bounce_transform(&self) -> bool {
+        self.bounce_disp.abs() > 1e-5
+            || self.bounce_hop.abs() > 1e-5
+            || self.gesture_bounce_squash.abs() > 1e-5
+            || self.drag_stretch.abs() > 1e-5
+            || self.drag_tilt.length_squared() > 1e-6
+            || self.impact_jolt.length_squared() > 1e-6
+    }
+    pub(super) fn character_bounce_transform(&self, anchor: f32, body_scale: f32) -> Mat4 {
+        let total_squash = self.bounce_disp + self.gesture_bounce_squash + self.drag_stretch;
+        let sy = (1. + total_squash).clamp(0.68, 1.36);
+        let sxz = (1. / sy.sqrt()).clamp(0.82, 1.24);
+        let roll = (self.drag_tilt.x + self.impact_jolt.x * 0.45).clamp(-0.55, 0.55);
+        let pitch = (self.drag_tilt.y - self.impact_jolt.y * 0.35).clamp(-0.40, 0.40);
+        let offset = Vec3::new(
+            self.impact_jolt.x * 2.0 * body_scale,
+            (self.bounce_hop + self.impact_jolt.y * 1.6) * body_scale,
+            0.,
+        );
+        Mat4::from_translation(offset + Vec3::Y * anchor)
+            * Mat4::from_euler(EulerRot::XYZ, pitch, 0., roll)
+            * Mat4::from_scale(Vec3::new(sxz, sy, sxz))
+            * Mat4::from_translation(-Vec3::Y * anchor)
     }
     fn resolve_letter_origins(&mut self, s: &Settings, skin: &Skin) {
         if !self.letters.iter().any(|l|l.pos.is_none() && l.hand_origin.is_none()) { return; }
@@ -1455,6 +1731,14 @@ fn parts_with_cape(
     let head_layers = if s.outer_layer { 2 } else { 1 };
     cover_cheeks(&mut v, limb_layers + head_layers - 1,
         limb_layers + head_layers, limb_layers, pose.cheek_cover);
+    if pose.has_bounce_transform() {
+        let bounce = pose.character_bounce_transform(anchor, 1.);
+        for part in &mut v {
+            if !part.keyboard {
+                part.transform = bounce * part.transform;
+            }
+        }
+    }
     let global = model_transform(s);
     for part in &mut v {
         part.transform = global * part.transform;
@@ -1715,6 +1999,14 @@ fn parts_chibi(s: &Settings, skin: &Skin, pose: &Pose, cape: Option<&Cape>) -> V
         });
     }
     cover_cheeks(&mut v, head_count - 1, head_count * 2, head_count, pose.cheek_cover);
+    if pose.has_bounce_transform() {
+        let bounce = pose.character_bounce_transform(anchor * 1.5, body_scale * 0.6);
+        for part in &mut v {
+            if !part.keyboard {
+                part.transform = bounce * part.transform;
+            }
+        }
+    }
     let global = model_transform(s);
     for part in &mut v {
         part.transform = global * part.transform;
@@ -3973,5 +4265,64 @@ mod tests {
         assert!(max_alpha > 0.9, "PAT 手部应完全淡入: {max_alpha}");
         assert_eq!(p.hand_alpha, 0., "0.5 秒后 PAT 手部必须消失");
         assert!(p.pat_start.is_none());
+    }
+    #[test]
+    fn bouncy_spring_drag_tilt_wall_impact_dizzy_and_hearts_work_and_preserve_keyboard() {
+        let (mut s, skin, mut p) = seated();
+        s.occasional_stretch = false;
+        s.occasional_tilt = false;
+        s.occasional_sleepy = false;
+        let board = |s: &Settings, skin: &Skin, p: &Pose| {
+            parts_with_cape(s, skin, p, None)
+                .into_iter()
+                .find(|part| part.keyboard)
+                .map(|part| part.transform)
+                .expect("seated model must have a keyboard")
+        };
+        let rest_board = board(&s, &skin, &p);
+        let rest_head = parts_with_cape(&s, &skin, &p, None)[0].transform;
+
+        // 1. Spring bounce deforms character parts and settles back to rest without touching keyboard
+        p.on_pickup(1.0);
+        tick(&mut p, &s, &skin, 1.05, false);
+        assert!(p.has_bounce_transform());
+        assert_ne!(rest_head, parts_with_cape(&s, &skin, &p, None)[0].transform);
+        assert_eq!(rest_board, board(&s, &skin, &p));
+        tick(&mut p, &s, &skin, 2.0, false);
+        assert!(!p.has_bounce_transform());
+
+        // 2. Rapid drag reversals trigger dizzy stars and tilt character while preserving keyboard
+        for step in 0..8 {
+            let now = 3.0 + step as f32 * 0.04;
+            let vx = if step % 2 == 0 { 950. } else { -950. };
+            p.set_drag_motion(vx, 120., now);
+            tick(&mut p, &s, &skin, now, false);
+        }
+        assert!(p.dizzy_strength(3.3) > 0.5, "rapid shake should trigger dizzy state");
+        assert_eq!(rest_board, board(&s, &skin, &p));
+        p.end_drag(3.35);
+
+        // 3. Rubbing across pet spawns floating hearts and expires cleanly
+        let mut spawned = false;
+        for step in 0..10 {
+            let now = 4.0 + step as f32 * 0.03;
+            let dx = if step % 2 == 0 { 42. } else { -42. };
+            if p.on_rub_move(dx, 2., now) {
+                spawned = true;
+            }
+        }
+        assert!(spawned && !p.hearts.is_empty(), "rubbing should spawn floating hearts");
+        let mut frame = Frame::new(240, 280);
+        frame.draw(&s, &skin, &p);
+        assert!(frame.bounds[2] > frame.bounds[0]);
+
+        // 4. Wall impact and landing settle cleanly and stop needing frames
+        p.on_wall_impact(Vec2::new(-1., 0.), 600., 5.0);
+        tick(&mut p, &s, &skin, 5.05, false);
+        assert!(p.has_bounce_transform());
+        assert_eq!(rest_board, board(&s, &skin, &p));
+        tick(&mut p, &s, &skin, 10.0, false);
+        assert!(!p.needs_frames());
+        assert!(!p.has_bounce_transform());
     }
 }
