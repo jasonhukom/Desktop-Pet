@@ -24,7 +24,7 @@ jobs:
         run: cargo build --manifest-path native/Cargo.toml --locked --release --target x86_64-pc-windows-gnu
       - name: Package
         run: |
-          VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' native/Cargo.toml | head -1)
+          VERSION=$(sed -n 's/^version = "\([^"]*\)".*/\1/p' native/Cargo.toml | tr -d '\r' | head -1)
           mkdir -p out
           cp native/target/x86_64-pc-windows-gnu/release/minecraft-pet.exe "out/Minecraft Desktop Pet.exe"
           cp 使用说明.md CHANGELOG.md LICENSE THIRD_PARTY_NOTICES.md out/
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref_name, 'v')
     steps:
       - uses: actions/download-artifact@v4
         with:
