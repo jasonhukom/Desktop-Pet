@@ -1,3 +1,11 @@
+# v1.0.1
+- Added multilingual language selection button (🌐) with dropdown supporting 85 languages.
+- Complete UI translations for console tabs, labels, buttons, and context menus across Windows and macOS.
+- Dynamic keyboard layout & alphabet mapping for animated typing letters matching the selected language.
+- Enhanced Unicode glyph rasterization and rendering for global alphabets and character sets.
+
+---
+
 v2.5.1更新内容：
 ·修复了若干Q版相关的bug；
 ·添加了对更多的放歌时能冒音符的音乐软件的支持；
