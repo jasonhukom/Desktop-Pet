@@ -27,13 +27,18 @@ jobs:
           VERSION=$(sed -n 's/^version = "\([^"]*\)".*/\1/p' native/Cargo.toml | tr -d '\r' | head -1)
           mkdir -p out
           cp native/target/x86_64-pc-windows-gnu/release/minecraft-pet.exe "out/Minecraft Desktop Pet.exe"
+          cp native/target/x86_64-pc-windows-gnu/release/minecraft-pet.exe "Minecraft.Desktop.Pet.exe"
+          cp native/target/x86_64-pc-windows-gnu/release/minecraft-pet.exe "Minecraft-Desktop-Pet-${VERSION}-Windows.exe"
           cp 使用说明.md CHANGELOG.md LICENSE THIRD_PARTY_NOTICES.md out/
           cp -R native/licenses out/
           cd out && zip -q -r "../Minecraft-Desktop-Pet-${VERSION}-Windows.zip" .
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: Minecraft-Desktop-Pet-*-Windows.zip
+          path: |
+            Minecraft-Desktop-Pet-*-Windows.zip
+            Minecraft.Desktop.Pet.exe
+            Minecraft-Desktop-Pet-*-Windows.exe
 
   macos:
     runs-on: macos-latest
@@ -68,6 +73,7 @@ jobs:
         with:
           files: |
             artifacts/windows/*.zip
+            artifacts/windows/*.exe
             artifacts/macos/*.zip
           tag_name: ${{ github.ref_name }}
           name: Minecraft Desktop Pet ${{ github.ref_name }}

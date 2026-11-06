@@ -24,7 +24,8 @@ Choose between two distinct editions depending on the experience you want:
   - **High-Quality Unicode Glyphs**: Crisp rasterization for Cyrillic, Greek, Arabic, Hebrew, CJK, Indic, and European alphabets.
   - **Standard Minecraft Poses**: Classic standing, sitting, sneaking, and custom posing without exaggerated jelly physics.
 - **Downloads (`v1.0.1`)**:
-  - 🪟 **Windows 10/11 x64**: [Minecraft-Desktop-Pet-1.0.1-Windows.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-Windows.zip) *(Portable `.exe`)*
+  - 🪟 **Windows Direct Executable**: [Minecraft.Desktop.Pet.exe](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft.Desktop.Pet.exe) *(Direct standalone `.exe` — download and run!)*
+  - 🪟 **Windows ZIP Bundle**: [Minecraft-Desktop-Pet-1.0.1-Windows.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-Windows.zip) *(Full bundle with `.exe`, docs, and licenses)*
   - 🍏 **macOS Universal**: [Minecraft-Desktop-Pet-1.0.1-mac-universal.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-mac-universal.zip) *(Apple Silicon + Intel)*
   - 🍏 **macOS Apple Silicon**: [Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip) *(M1/M2/M3/M4)*
   - 🍏 **macOS Intel**: [Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1/Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip) *(x86_64)*
@@ -43,7 +44,8 @@ Choose between two distinct editions depending on the experience you want:
   - **Mouse Wheel Scaling**: Scroll your mouse wheel directly over the pet to smoothly grow or shrink their size on the desktop.
   - **Includes All v1.0.1 Languages**: Retains the 85+ language switcher, translations, and layout-aware typing animations.
 - **Downloads (`v1.0.1.b Bounce`)**:
-  - 🪟 **Windows 10/11 x64**: [Minecraft-Desktop-Pet-1.0.1-Windows.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-Windows.zip) *(Portable `.exe`)*
+  - 🪟 **Windows Direct Executable**: [Minecraft.Desktop.Pet.exe](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft.Desktop.Pet.exe) *(Direct standalone `.exe` — download and run!)*
+  - 🪟 **Windows ZIP Bundle**: [Minecraft-Desktop-Pet-1.0.1-Windows.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-Windows.zip) *(Full bundle with `.exe`, docs, and licenses)*
   - 🍏 **macOS Universal**: [Minecraft-Desktop-Pet-1.0.1-mac-universal.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-mac-universal.zip) *(Apple Silicon + Intel)*
   - 🍏 **macOS Apple Silicon**: [Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-mac-AppleSilicon.zip) *(M1/M2/M3/M4)*
   - 🍏 **macOS Intel**: [Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip](https://github.com/jasonhukom/Desktop-Pet/releases/download/v1.0.1.b/Minecraft-Desktop-Pet-1.0.1-mac-Intel.zip) *(x86_64)*
