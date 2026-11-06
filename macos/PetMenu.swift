@@ -13,15 +13,15 @@ extension AppDelegate {
     func buildMenu(_ menu: NSMenu) {
         menu.removeAllItems()
         add(menu, "Open Settings…", #selector(showSettings), key: ",")
-        if startupPending {
-            let langMenu = submenu(menu, "🌐 Language")
+        let langMenu = submenu(menu, "🌐 Language")
         let curLang = settings["language"] as? String ?? "en"
         for (code, name, eng) in LanguageList.all.prefix(20) {
-            let item = add(langMenu, "\(name) (\(eng))", #selector(selectLanguageItem(_:)), state: curLang == code)
-            item.representedObject = code
+            let item = add(langMenu, "\(name) (\(eng))", #selector(menuChoice(_:)), state: curLang == code)
+            item.representedObject = MenuSetting("language", code)
         }
-        menu.addItem(.separator())
-        add(menu, "Exit Minecraft Desktop Pet", #selector(quit), key: "q")
+        if startupPending {
+            menu.addItem(.separator())
+            add(menu, "Exit Minecraft Desktop Pet", #selector(quit), key: "q")
             return
         }
         let actions = submenu(menu, "Gestures")

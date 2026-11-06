@@ -54,9 +54,6 @@ fn main() {
             .status()
             .expect("clang++ required");
         assert!(status.success());
-        println!("cargo:rustc-link-arg={}", audio.display());
-        println!("cargo:rustc-link-lib=ole32");
-        println!("cargo:rustc-link-lib=uuid");
         println!("cargo:rerun-if-changed=app.manifest");
         println!("cargo:rerun-if-changed=../assets/icon.ico");
         let out = out_dir.join("app-res.o");
@@ -66,6 +63,10 @@ fn main() {
             .status()
             .expect("windres required");
         assert!(status.success());
+        println!("cargo:rustc-link-arg={}", audio.display());
         println!("cargo:rustc-link-arg={}", out.display());
+        println!("cargo:rustc-link-arg=-lole32");
+        println!("cargo:rustc-link-arg=-luuid");
+        println!("cargo:rustc-link-arg=-lmsvcrt");
     }
 }
