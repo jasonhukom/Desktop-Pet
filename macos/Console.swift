@@ -545,6 +545,7 @@ enum LanguageList {
     ]
 }
 
+extension AppDelegate {
     @objc func showLanguageMenu(_ sender: NSButton) {
         let menu = NSMenu(title: "Language")
         let currentLang = settings["language"] as? String ?? "en"
@@ -594,3 +595,4 @@ enum LanguageList {
         panel = nil
         showSettings()
     }
+}

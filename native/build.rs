@@ -68,5 +68,6 @@ fn main() {
         println!("cargo:rustc-link-arg=-lole32");
         println!("cargo:rustc-link-arg=-luuid");
         println!("cargo:rustc-link-arg=-lmsvcrt");
+        println!("cargo:rustc-link-arg=-lkernel32");
     }
 }
