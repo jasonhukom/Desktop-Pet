@@ -1,3 +1,13 @@
+# v1.2.0
+- **Unified Release**: Brings together all interactive features, physics, and internationalization into one cohesive release.
+- **Bouncy Jelly Physics & Kinetic Momentum**: Dynamic squash, stretch, and spring physics during motion, plus velocity-based fling and screen edge bouncing.
+- **Interactive Gestures & Effects**: Rapid petting spawns floating Minecraft heart particles; vigorous shaking triggers dizzy stars; mouse wheel dynamically scales the pet.
+- **85+ Languages & Global Keyboard Support**: Full localization across Windows and macOS UI with layout-adaptive typing animations and Unicode glyph rasterization.
+- **Windows Standalone Executable**: Direct `.exe` download (`Minecraft.Desktop.Pet.exe`) alongside standard ZIP bundles.
+- **macOS Universal & Dedicated Architectures**: Native Apple Silicon and Intel support with automated packaging.
+
+---
+
 # v1.0.1.b Bounce Edition
 - **Bouncy Jelly Physics**: Dynamic squash, stretch, and wobble inertia on interactions and motion.
 - **Drag & Throw Momentum**: Throw the pet across the screen with velocity-based bouncing off display borders.
